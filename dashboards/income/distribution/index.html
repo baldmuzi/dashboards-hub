@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>工资分布 · 城市 / 行业 / 收入全景</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e8edf5 100%);
+    color: #2c3e50;
+    padding: 24px;
+    min-height: 100vh;
+  }
+  .container { max-width: 1440px; margin: 0 auto; }
+  header {
+    background: linear-gradient(135deg, #16a085 0%, #1abc9c 50%, #2ecc71 100%);
+    color: white;
+    padding: 28px 32px;
+    border-radius: 16px;
+    margin-bottom: 24px;
+    box-shadow: 0 8px 24px rgba(22,160,133,0.25);
+  }
+  header h1 { font-size: 28px; margin-bottom: 8px; font-weight: 600; }
+  header .subtitle { font-size: 14px; opacity: 0.95; line-height: 1.7; }
+  header .source { font-size: 12px; opacity: 0.85; margin-top: 8px; line-height: 1.6; }
+  header a { color: #fff; text-decoration: underline; }
+
+  .tab-bar {
+    display: flex;
+    background: white;
+    border-radius: 12px;
+    padding: 6px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    gap: 6px;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 14px 20px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+    color: #7f8c8d;
+    transition: all 0.2s;
+  }
+  .tab-btn.active {
+    background: linear-gradient(135deg, #16a085 0%, #1abc9c 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(22,160,133,0.3);
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 1000px) { .layout { grid-template-columns: 1fr; } }
+
+  .card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  }
+  .card h2 {
+    font-size: 17px;
+    margin-bottom: 16px;
+    color: #34495e;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #ecf0f1;
+  }
+
+  .input-group { margin-bottom: 16px; }
+  .input-group label {
+    display: block;
+    font-size: 13px;
+    color: #5a6c7d;
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+  .input-group select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #dde3ec;
+    border-radius: 8px;
+    font-size: 14px;
+    background: white;
+  }
+  .input-group select:focus { outline: none; border-color: #16a085; }
+
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .kpi {
+    background: linear-gradient(135deg, #f0faf6 0%, #d1f5e8 100%);
+    border-radius: 10px;
+    padding: 16px;
+    border-left: 4px solid #16a085;
+  }
+  .kpi-label { font-size: 12px; color: #7f8c8d; margin-bottom: 6px; }
+  .kpi-value { font-size: 22px; font-weight: 700; color: #2c3e50; }
+  .kpi-sub { font-size: 11px; color: #95a5a6; margin-top: 4px; }
+
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 900px) { .row { grid-template-columns: 1fr; } }
+
+  .chart-wrapper { position: relative; height: 280px; }
+  .chart-wrapper.tall { height: 420px; }
+  .chart-wrapper.xtall { height: 540px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #ecf0f1; }
+  th { background: #f8f9fb; color: #5a6c7d; font-weight: 600; font-size: 12px; }
+  td.num { text-align: right; font-family: "SF Mono", Menlo, monospace; }
+  tr.highlight { background: #f0faf6; font-weight: 600; }
+  tr.it-row { background: #fff8e7; }
+
+  .info-box {
+    background: #f8f9fb;
+    border-left: 3px solid #16a085;
+    padding: 12px 16px;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #5a6c7d;
+    margin-top: 12px;
+    line-height: 1.6;
+  }
+  .info-box.warn {
+    background: #fdf6ec;
+    border-color: #f39c12;
+  }
+
+  footer {
+    text-align: center;
+    color: #95a5a6;
+    font-size: 12px;
+    padding: 16px;
+    margin-top: 16px;
+    line-height: 1.8;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>工资分布看板 · 城市 / 行业 / 收入全景</h1>
+    <div class="subtitle">
+      <strong>"平均工资"骗你太多年了</strong>——统计局公布的"年平均工资 12.4 万"，全国一半人月薪不到 5,150 元。
+      本看板从 3 个维度还原工资真实分布：城市间差距、行业间差距、收入分位差距。
+    </div>
+    <div class="source">
+      数据来源：
+      <a href="https://www.stats.gov.cn/sj/zxfb/202505/t20250516_1959826.html" target="_blank">国家统计局 2024 工资公报</a> ·
+      <a href="https://www.stats.gov.cn/sj/zxfb/202501/t20250117_1958325.html" target="_blank">国家统计局 2024 居民收入</a> ·
+      各市统计局 2024 ·
+      <a href="https://www.51ldb.com/shsldb/zc/content/01953c24b1cfc0010000d7c90f012edc.htm" target="_blank">智联招聘 2025 春招报告</a> ·
+      58 同城 2025Q1
+    </div>
+  </header>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" data-target="panel-city">🏙️ 按城市看</button>
+    <button class="tab-btn" data-target="panel-industry">🏭 按行业看</button>
+    <button class="tab-btn" data-target="panel-overview">📊 收入全景</button>
+  </div>
+
+  <!-- ========= Panel 1：按城市看 ========= -->
+  <div id="panel-city" class="panel active">
+    <div class="layout">
+      <div class="card">
+        <h2>选择城市</h2>
+        <div class="input-group">
+          <label>城市</label>
+          <select id="c_city"></select>
+        </div>
+        <div class="info-box">
+          📌 数据口径：各市统计局公布的<strong>2024 年</strong>城镇非私营和私营单位<strong>就业人员年平均工资</strong>，
+          以及 58 同城 2025Q1 招聘平均月薪。
+          <br /><br />
+          ⚠️ 工资<strong>平均数被高薪拉高</strong>——同期国家统计局企业薪酬调查显示，全国企业雇员月薪<strong>中位数仅 5,150 元</strong>，与平均数差距巨大。
+        </div>
+      </div>
+
+      <div>
+        <div class="kpi-grid" id="city_kpi"></div>
+        <div class="card" style="margin-bottom:24px;">
+          <h2>该城市在全国所处水平（vs 全国均值 + 全国分位线）</h2>
+          <div class="chart-wrapper"><canvas id="city_position"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:24px;">
+      <h2>17 城横向对比 · 私营单位工资</h2>
+      <div class="chart-wrapper tall"><canvas id="city_compare"></canvas></div>
+      <div class="info-box warn" style="margin-top:14px;">
+        本图工资口径与 <a href="../../housing/cities/index.html" style="color:#d35400">房贷看板</a>、<a href="../../pension/guangdong/index.html" style="color:#6a3093">养老金看板</a> 完全一致——均为城镇<strong>私营单位</strong>口径，便于横向对照。
+      </div>
+    </div>
+  </div>
+
+  <!-- ========= Panel 2：按行业看 ========= -->
+  <div id="panel-industry" class="panel">
+    <div class="layout">
+      <div class="card">
+        <h2>选择行业</h2>
+        <div class="input-group">
+          <label>19 个行业大类（GB/T 4754-2017）</label>
+          <select id="i_industry"></select>
+        </div>
+        <div class="info-box">
+          📌 数据口径：<a href="https://www.stats.gov.cn/sj/zxfb/202505/t20250516_1959826.html" target="_blank">国家统计局 2024 年全国城镇单位就业人员年平均工资</a>，
+          按 19 个国民经济行业大类口径分类。
+          <br /><br />
+          💡 选择"信息传输、软件和信息技术服务业"可查看互联网行业细分岗位薪资。
+        </div>
+      </div>
+
+      <div>
+        <div class="kpi-grid" id="industry_kpi"></div>
+        <div class="card" style="margin-bottom:24px;">
+          <h2>所选行业在 19 行业中的排名</h2>
+          <div class="chart-wrapper"><canvas id="industry_rank"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 互联网细分（仅 IT 行业显示） -->
+    <div class="card" style="margin-bottom:24px; display:none;" id="it_detail_card">
+      <h2>💻 互联网行业细分岗位薪资（招聘平台口径，2025）</h2>
+      <table id="it_detail_table"></table>
+      <div class="info-box warn" style="margin-top:12px;">
+        来源：智联招聘《2025 春招市场行情报告》、BOSS 直聘公开数据。注意：招聘"挂牌月薪"高于实际入职后平均水平，且未计入年终奖、股权激励等。
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="card">
+        <h2>19 行业 · 非私营 vs 私营 平均年薪</h2>
+        <div class="chart-wrapper tall"><canvas id="industry_dualbar"></canvas></div>
+      </div>
+      <div class="card">
+        <h2>19 行业 · 私非工资比（市场化程度）</h2>
+        <div class="chart-wrapper tall"><canvas id="industry_ratio"></canvas></div>
+        <div class="info-box" style="margin-top:12px;">
+          私非比 = 私营平均 ÷ 非私营平均。比值越接近 1，市场化程度越高、所有制差异越小。最低的行业代表国有体制溢价最强。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========= Panel 3：收入全景 ========= -->
+  <div id="panel-overview" class="panel">
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="kpi-label">全国月薪中位数（企业雇员）</div>
+        <div class="kpi-value">¥5,150</div>
+        <div class="kpi-sub">2024 企业薪酬调查</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">城镇私营月均</div>
+        <div class="kpi-value">¥5,790</div>
+        <div class="kpi-sub">69,476 ÷ 12</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">城镇非私营月均</div>
+        <div class="kpi-value">¥10,343</div>
+        <div class="kpi-sub">124,110 ÷ 12</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">城镇居民可支配中位数</div>
+        <div class="kpi-value">¥4,109</div>
+        <div class="kpi-sub">49,302 ÷ 12（家庭口径）</div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="card">
+        <h2>📊 全国居民收入五等分（人均可支配 元/年）</h2>
+        <div class="chart-wrapper"><canvas id="ov_quintile"></canvas></div>
+        <div class="info-box" style="margin-top:12px;">
+          国家统计局把全国居民按可支配收入五等分，每组占 20%。<strong>最高 20% 与最低 20% 差距 10.4 倍</strong>。
+        </div>
+      </div>
+      <div class="card">
+        <h2>💼 规模以上企业 · 5 类岗位平均年薪</h2>
+        <div class="chart-wrapper"><canvas id="ov_jobtype"></canvas></div>
+        <div class="info-box" style="margin-top:12px;">
+          中层管理人均 20.3 万 / 专技 14.8 万 / 办事 9.3 万 / 服务 7.8 万 / 生产 7.9 万。<strong>同一企业内"管理层 vs 一线"差距达 2.6 倍</strong>。
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:24px;">
+      <h2>🏭 19 个国民经济行业 · 完整工资排序（2024 国家统计局）</h2>
+      <div class="chart-wrapper xtall"><canvas id="ov_industries"></canvas></div>
+    </div>
+
+    <div class="card">
+      <h2>📋 19 行业明细表（私非对照）</h2>
+      <table id="ov_industry_table"></table>
+    </div>
+  </div>
+
+  <footer>
+    <strong>方法论说明</strong>：
+    国家统计局公布"平均工资"采用算术平均，会被高薪显著拉高；"中位数"更接近多数人实际感受，但官方仅在企业薪酬调查中披露。
+    招聘平台数据反映"挂牌薪资"而非"在职薪资"，且偏重一线/技术岗。本看板将三类口径并列展示，便于交叉验证。
+  </footer>
+</div>
+
+<script>
+// =============== 数据 ===============
+
+// 17 个城市的工资数据（与房贷看板一致，城镇私营单位 2024）
+// 招聘均薪来自 58 同城 2025Q1（已知值的城市填入，未知 null）
+const CITIES = [
+  { name: '上海', salary: 113914, salaryNonPrivate: 239557, recruit: 9727 },
+  { name: '北京', salary: 106905, salaryNonPrivate: 224608, recruit: 8765 },
+  { name: '深圳', salary: 95217,  salaryNonPrivate: 174478, recruit: 8576 },
+  { name: '杭州', salary: 92054,  salaryNonPrivate: 162774, recruit: 10165 },
+  { name: '广州', salary: 82907,  salaryNonPrivate: 159312, recruit: 8000 },
+  { name: '中山', salary: 83496,  salaryNonPrivate: 108857, recruit: null },
+  { name: '东莞', salary: 80632,  salaryNonPrivate: 105062, recruit: null },
+  { name: '珠海', salary: 79041,  salaryNonPrivate: 138119, recruit: null },
+  { name: '佛山', salary: 78612,  salaryNonPrivate: 114597, recruit: null },
+  { name: '惠州', salary: 69696,  salaryNonPrivate: 105735, recruit: null },
+  { name: '成都', salary: 68954,  salaryNonPrivate: 125512, recruit: null },
+  { name: '西安', salary: 66260,  salaryNonPrivate: 111921, recruit: null },
+  { name: '清远', salary: 63361,  salaryNonPrivate: 102946, recruit: null },
+  { name: '河源', salary: 63051,  salaryNonPrivate: 94952,  recruit: null },
+  { name: '云浮', salary: 62275,  salaryNonPrivate: 103143, recruit: null },
+  { name: '湛江', salary: 59979,  salaryNonPrivate: 108797, recruit: null },
+  { name: '汕头', salary: 58997,  salaryNonPrivate: 98870,  recruit: null }
+];
+
+// 19 个行业大类（国家统计局 2024 公报）
+const INDUSTRIES = [
+  { name: '信息传输、软件和信息技术服务业', short: 'IT/互联网', nonPrivate: 238966, private: 123193, isIT: true },
+  { name: '金融业', short: '金融', nonPrivate: 201883, private: 135339 },
+  { name: '科学研究和技术服务业', short: '科研/技术服务', nonPrivate: 175425, private: 82387 },
+  { name: '电力、热力、燃气及水生产和供应业', short: '电力/能源', nonPrivate: 150285, private: 63574 },
+  { name: '卫生和社会工作', short: '医疗', nonPrivate: 143173, private: 75287 },
+  { name: '采矿业', short: '采矿', nonPrivate: 140706, private: 76010 },
+  { name: '批发和零售业', short: '批发零售', nonPrivate: 129658, private: 67059 },
+  { name: '交通运输、仓储和邮政业', short: '交通邮政', nonPrivate: 127889, private: 67973 },
+  { name: '教育', short: '教育', nonPrivate: 126185, private: 60719 },
+  { name: '文化、体育和娱乐业', short: '文体娱乐', nonPrivate: 126040, private: 61669 },
+  { name: '公共管理、社会保障和社会组织', short: '公共管理', nonPrivate: 114840, private: null },
+  { name: '租赁和商务服务业', short: '商务服务', nonPrivate: 110353, private: 69214 },
+  { name: '制造业', short: '制造业', nonPrivate: 107987, private: 71467 },
+  { name: '房地产业', short: '房地产', nonPrivate: 91912,  private: 55979 },
+  { name: '建筑业', short: '建筑', nonPrivate: 89519,  private: 65494 },
+  { name: '水利、环境和公共设施管理业', short: '水利环境', nonPrivate: 68315, private: 49007 },
+  { name: '居民服务、修理和其他服务业', short: '居民服务', nonPrivate: 68159, private: 52139 },
+  { name: '农、林、牧、渔业', short: '农林牧渔', nonPrivate: 67475, private: 46433 },
+  { name: '住宿和餐饮业', short: '住宿餐饮', nonPrivate: 60240, private: 54042 }
+];
+
+// 国家统计局 2024 居民可支配收入五等分（元/年/人）
+const QUINTILE = [
+  { name: '低收入(20%)', amount: 9542 },
+  { name: '中间偏下(20%)', amount: 21608 },
+  { name: '中间(20%)', amount: 33925 },
+  { name: '中间偏上(20%)', amount: 53359 },
+  { name: '高收入(20%)', amount: 98809 }
+];
+
+// 规模以上企业 · 5 类岗位平均年薪（国家统计局 2024）
+const JOB_TYPES = [
+  { name: '中层及以上管理人员', amount: 203014 },
+  { name: '专业技术人员', amount: 148046 },
+  { name: '办事人员和有关人员', amount: 93189 },
+  { name: '生产制造及有关人员', amount: 78561 },
+  { name: '社会生产服务和生活服务人员', amount: 77584 }
+];
+
+// 互联网细分岗位（智联招聘 2025 春招 / BOSS 直聘公开数据）
+const IT_ROLES = [
+  { role: '大模型算法工程师', monthly: 52000, source: '智联 2025 春招新发岗位 TOP1' },
+  { role: '数字前端工程师', monthly: 67728, source: '智联 2025 春招技术岗 TOP' },
+  { role: '集成电路 IC 设计', monthly: 64953, source: '智联 2025 春招' },
+  { role: 'AI 工程师（北京）', monthly: 25700, source: '智联 2025' },
+  { role: 'AI 工程师（全国）', monthly: 20600, source: '智联 2025' },
+  { role: '机器人算法工程师', monthly: 35000, source: '招聘平台 2025' },
+  { role: 'AI 产品经理（杭州）', monthly: 29000, source: '智联 2025' },
+  { role: 'AI 产品经理（全国均值）', monthly: 20000, source: '智联 2025' },
+  { role: 'Java 后端开发', monthly: 13000, source: '行业 P50' },
+  { role: '前端开发', monthly: 10400, source: '行业 P50 (124,532 元/年)' },
+  { role: '测试工程师', monthly: 9500, source: '行业均值' },
+  { role: '运营岗（互联网）', monthly: 8400, source: '约为技术岗 65%' }
+];
+
+const NATIONAL_PRIVATE = 69476;
+const NATIONAL_NONPRIVATE = 124110;
+
+// =============== UI 初始化 ===============
+const $ = id => document.getElementById(id);
+const fmt = n => Math.round(n).toLocaleString('zh-CN');
+const pct = n => (n*100).toFixed(1) + '%';
+
+// Tab 切换
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    $(btn.dataset.target).classList.add('active');
+  });
+});
+
+// 城市下拉
+const citySel = $('c_city');
+CITIES.forEach((c,i) => {
+  const opt = document.createElement('option');
+  opt.value = i;
+  opt.textContent = `${c.name}（私营 ¥${fmt(c.salary)}/年）`;
+  citySel.appendChild(opt);
+});
+
+// 行业下拉（IT 行业默认选中）
+const indSel = $('i_industry');
+INDUSTRIES.forEach((ind,i) => {
+  const opt = document.createElement('option');
+  opt.value = i;
+  opt.textContent = `${ind.short} (${fmt(ind.nonPrivate)} / ${ind.private ? fmt(ind.private) : '—'})`;
+  indSel.appendChild(opt);
+});
+
+let cityIdx = 0;
+let indIdx = 0;
+
+citySel.addEventListener('change', e => { cityIdx = +e.target.value; renderCity(); });
+indSel.addEventListener('change', e => { indIdx = +e.target.value; renderIndustry(); });
+
+// =============== 渲染 · 城市视图 ===============
+let chartCityPos, chartCityCompare;
+
+function renderCity() {
+  const c = CITIES[cityIdx];
+  const monthSalary = c.salary / 12;
+  const ratio = c.salary / NATIONAL_PRIVATE;
+
+  // 在 17 城中排名
+  const sorted = [...CITIES].sort((a,b) => b.salary - a.salary);
+  const rank = sorted.findIndex(x => x.name === c.name) + 1;
+
+  // 在全国五等分中所处位置（用月可支配收入估算，私营月薪近似可支配）
+  let quintilePos = '高收入组(前20%)';
+  const monthQuintile = c.salary / 12;
+  if (monthQuintile < 9542/12) quintilePos = '低收入组(末20%)';
+  else if (monthQuintile < 21608/12) quintilePos = '中间偏下(60%-80%末)';
+  else if (monthQuintile < 33925/12) quintilePos = '中间(40%-60%)';
+  else if (monthQuintile < 53359/12) quintilePos = '中间偏上(20%-40%)';
+  else if (monthQuintile < 98809/12) quintilePos = '高收入(前20%)';
+  else quintilePos = '超高收入(超出前20%均值)';
+
+  $('city_kpi').innerHTML = `
+    <div class="kpi">
+      <div class="kpi-label">城镇私营年薪</div>
+      <div class="kpi-value">¥${fmt(c.salary)}</div>
+      <div class="kpi-sub">月均 ¥${fmt(monthSalary)}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">城镇非私营年薪</div>
+      <div class="kpi-value">¥${fmt(c.salaryNonPrivate)}</div>
+      <div class="kpi-sub">月均 ¥${fmt(c.salaryNonPrivate/12)}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">招聘平均月薪</div>
+      <div class="kpi-value">${c.recruit ? '¥' + fmt(c.recruit) : '—'}</div>
+      <div class="kpi-sub">58 同城 2025Q1</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">17 城排名</div>
+      <div class="kpi-value">第 ${rank} 位</div>
+      <div class="kpi-sub">私营年薪降序</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">vs 全国均值</div>
+      <div class="kpi-value">${(ratio*100).toFixed(0)}%</div>
+      <div class="kpi-sub">全国私营均 ¥${fmt(NATIONAL_PRIVATE)}</div>
+    </div>
+  `;
+
+  // 全国分位线对照
+  if (chartCityPos) chartCityPos.destroy();
+  chartCityPos = new Chart($('city_position'), {
+    type: 'bar',
+    data: {
+      labels: ['本市私营', '本市非私营', '全国私营均值', '全国非私营均值', '全国月薪中位数×12', '高收入20%均值'],
+      datasets: [{
+        data: [c.salary, c.salaryNonPrivate, NATIONAL_PRIVATE, NATIONAL_NONPRIVATE, 5150*12, 98809],
+        backgroundColor: ['#16a085', '#1abc9c', '#95a5a6', '#7f8c8d', '#bdc3c7', '#27ae60']
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: c => '¥' + fmt(c.parsed.x) } }
+      },
+      scales: { x: { ticks: { callback: v => '¥' + (v/10000).toFixed(0) + '万' } } }
+    }
+  });
+
+  // 17 城对比柱状（突出当前城市）
+  const list = [...CITIES].sort((a,b) => b.salary - a.salary);
+  if (chartCityCompare) chartCityCompare.destroy();
+  chartCityCompare = new Chart($('city_compare'), {
+    type: 'bar',
+    data: {
+      labels: list.map(x => x.name),
+      datasets: [{
+        label: '私营年薪',
+        data: list.map(x => x.salary),
+        backgroundColor: list.map(x => x.name === c.name ? '#e67e22' : '#16a085')
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => '¥' + fmt(c.parsed.y) + '/年' } } },
+      scales: { y: { ticks: { callback: v => '¥' + (v/10000).toFixed(0) + '万' } } }
+    }
+  });
+}
+
+// =============== 渲染 · 行业视图 ===============
+let chartIndRank, chartIndDual, chartIndRatio;
+
+function renderIndustry() {
+  const ind = INDUSTRIES[indIdx];
+
+  // 排名
+  const sortedNP = [...INDUSTRIES].sort((a,b) => b.nonPrivate - a.nonPrivate);
+  const rankNP = sortedNP.findIndex(x => x.name === ind.name) + 1;
+  const sortedP = [...INDUSTRIES].filter(x => x.private).sort((a,b) => b.private - a.private);
+  const rankP = ind.private ? sortedP.findIndex(x => x.name === ind.name) + 1 : null;
+  const ratio = ind.private ? (ind.private / ind.nonPrivate) : null;
+
+  $('industry_kpi').innerHTML = `
+    <div class="kpi">
+      <div class="kpi-label">非私营年薪</div>
+      <div class="kpi-value">¥${fmt(ind.nonPrivate)}</div>
+      <div class="kpi-sub">19 行业中第 ${rankNP} 位</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">私营年薪</div>
+      <div class="kpi-value">${ind.private ? '¥' + fmt(ind.private) : '—'}</div>
+      <div class="kpi-sub">${rankP ? '私营 18 行业中第 ' + rankP + ' 位' : '该行业无私营统计'}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">私非比</div>
+      <div class="kpi-value">${ratio ? ratio.toFixed(2) : '—'}</div>
+      <div class="kpi-sub">越接近 1 = 市场化程度越高</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">vs 全国平均</div>
+      <div class="kpi-value">${(ind.nonPrivate/NATIONAL_NONPRIVATE*100).toFixed(0)}%</div>
+      <div class="kpi-sub">非私营对比</div>
+    </div>
+  `;
+
+  // 单行业排名图：把所选行业高亮
+  if (chartIndRank) chartIndRank.destroy();
+  chartIndRank = new Chart($('industry_rank'), {
+    type: 'bar',
+    data: {
+      labels: sortedNP.map(x => x.short),
+      datasets: [{
+        label: '非私营年薪',
+        data: sortedNP.map(x => x.nonPrivate),
+        backgroundColor: sortedNP.map(x => x.name === ind.name ? '#e67e22' : '#16a085')
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => '¥' + fmt(c.parsed.x) } } },
+      scales: { x: { ticks: { callback: v => '¥' + (v/10000).toFixed(0) + '万' } } }
+    }
+  });
+
+  // 显示 IT 行业细分
+  const itCard = $('it_detail_card');
+  if (ind.isIT) {
+    itCard.style.display = '';
+    $('it_detail_table').innerHTML = `
+      <thead><tr><th>岗位</th><th class="num">平均月薪</th><th class="num">折年薪</th><th>来源</th></tr></thead>
+      <tbody>
+        ${IT_ROLES.map(r => `
+          <tr class="it-row">
+            <td>${r.role}</td>
+            <td class="num">¥${fmt(r.monthly)}</td>
+            <td class="num">¥${fmt(r.monthly*12)}</td>
+            <td style="font-size:11px;color:#95a5a6">${r.source}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    `;
+  } else {
+    itCard.style.display = 'none';
+  }
+
+  drawIndustryDual();
+  drawIndustryRatio();
+}
+
+function drawIndustryDual() {
+  const list = [...INDUSTRIES].sort((a,b) => b.nonPrivate - a.nonPrivate);
+  if (chartIndDual) chartIndDual.destroy();
+  chartIndDual = new Chart($('industry_dualbar'), {
+    type: 'bar',
+    data: {
+      labels: list.map(x => x.short),
+      datasets: [
+        { label: '非私营', data: list.map(x => x.nonPrivate), backgroundColor: '#1abc9c' },
+        { label: '私营', data: list.map(x => x.private || 0), backgroundColor: '#f39c12' }
+      ]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top' }, tooltip: { callbacks: { label: c => c.dataset.label + ': ¥' + fmt(c.parsed.x) } } },
+      scales: { x: { ticks: { callback: v => '¥' + (v/10000).toFixed(0) + '万' } } }
+    }
+  });
+}
+
+function drawIndustryRatio() {
+  const list = INDUSTRIES.filter(x => x.private).map(x => ({
+    short: x.short,
+    ratio: x.private / x.nonPrivate
+  })).sort((a,b) => a.ratio - b.ratio);
+
+  if (chartIndRatio) chartIndRatio.destroy();
+  chartIndRatio = new Chart($('industry_ratio'), {
+    type: 'bar',
+    data: {
+      labels: list.map(x => x.short),
+      datasets: [{
+        label: '私营 ÷ 非私营',
+        data: list.map(x => x.ratio),
+        backgroundColor: list.map(x => x.ratio < 0.5 ? '#c0392b' : x.ratio < 0.7 ? '#e67e22' : '#27ae60')
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => (c.parsed.x*100).toFixed(0) + '%' } } },
+      scales: { x: { ticks: { callback: v => (v*100).toFixed(0) + '%' }, max: 1 } }
+    }
+  });
+}
+
+// =============== 渲染 · 收入全景 ===============
+new Chart($('ov_quintile'), {
+  type: 'bar',
+  data: {
+    labels: QUINTILE.map(x => x.name),
+    datasets: [{
+      label: '人均可支配年收入',
+      data: QUINTILE.map(x => x.amount),
+      backgroundColor: ['#c0392b', '#e67e22', '#f39c12', '#16a085', '#27ae60']
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => '¥' + fmt(c.parsed.y) + '/年' } } },
+    scales: { y: { ticks: { callback: v => '¥' + (v/1000).toFixed(0) + 'k' } } }
+  }
+});
+
+new Chart($('ov_jobtype'), {
+  type: 'bar',
+  data: {
+    labels: JOB_TYPES.map(x => x.name),
+    datasets: [{
+      data: JOB_TYPES.map(x => x.amount),
+      backgroundColor: ['#16a085', '#1abc9c', '#3498db', '#95a5a6', '#bdc3c7']
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => '¥' + fmt(c.parsed.x) } } },
+    scales: { x: { ticks: { callback: v => '¥' + (v/10000).toFixed(0) + '万' } } }
+  }
+});
+
+// 19 行业全景
+const sorted = [...INDUSTRIES].sort((a,b) => b.nonPrivate - a.nonPrivate);
+new Chart($('ov_industries'), {
+  type: 'bar',
+  data: {
+    labels: sorted.map(x => x.short),
+    datasets: [
+      { label: '非私营', data: sorted.map(x => x.nonPrivate), backgroundColor: '#1abc9c' },
+      { label: '私营', data: sorted.map(x => x.private || 0), backgroundColor: '#f39c12' }
+    ]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'top' }, tooltip: { callbacks: { label: c => c.dataset.label + ': ¥' + fmt(c.parsed.x) } } },
+    scales: { x: { ticks: { callback: v => '¥' + (v/10000).toFixed(0) + '万' } } }
+  }
+});
+
+// 19 行业明细表
+$('ov_industry_table').innerHTML = `
+  <thead><tr><th>行业</th><th class="num">非私营年薪</th><th class="num">私营年薪</th><th class="num">私非比</th><th class="num">vs 全国非私营</th></tr></thead>
+  <tbody>
+    ${sorted.map(x => `
+      <tr ${x.isIT ? 'class="it-row"' : ''}>
+        <td>${x.short}</td>
+        <td class="num">${fmt(x.nonPrivate)}</td>
+        <td class="num">${x.private ? fmt(x.private) : '—'}</td>
+        <td class="num">${x.private ? (x.private/x.nonPrivate).toFixed(2) : '—'}</td>
+        <td class="num">${(x.nonPrivate/NATIONAL_NONPRIVATE*100).toFixed(0)}%</td>
+      </tr>
+    `).join('')}
+    <tr class="highlight">
+      <td>全国均值</td>
+      <td class="num">${fmt(NATIONAL_NONPRIVATE)}</td>
+      <td class="num">${fmt(NATIONAL_PRIVATE)}</td>
+      <td class="num">${(NATIONAL_PRIVATE/NATIONAL_NONPRIVATE).toFixed(2)}</td>
+      <td class="num">100%</td>
+    </tr>
+  </tbody>
+`;
+
+// 启动
+renderCity();
+renderIndustry();
+</script>
+</body>
+</html>

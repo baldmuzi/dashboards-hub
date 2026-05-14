@@ -46,6 +46,13 @@
       "icon": "👴",
       "description": "养老金、替代率、社保",
       "color": "#6a3093"
+    },
+    {
+      "id": "income",
+      "name": "收入与工资",
+      "icon": "💵",
+      "description": "工资分布、行业对比、收入分位",
+      "color": "#16a085"
     }
   ],
   "dashboards": [
@@ -88,6 +95,16 @@
       "path": "dashboards/housing/cities/index.html",
       "updated": "2026-05-14",
       "source": "国家统计局、央行LPR、各市统计局、房天下、贝壳"
+    },
+    {
+      "id": "income-distribution",
+      "category": "income",
+      "title": "工资分布 · 城市 / 行业 / 收入全景",
+      "subtitle": "17 城 × 19 行业 × 五等分收入 · 互联网细分岗位深入",
+      "tags": ["工资分布", "19行业", "互联网", "中位数", "五等分", "招聘月薪"],
+      "path": "dashboards/income/distribution/index.html",
+      "updated": "2026-05-14",
+      "source": "国家统计局、各市统计局、智联招聘、58同城"
     }
   ]
 }
