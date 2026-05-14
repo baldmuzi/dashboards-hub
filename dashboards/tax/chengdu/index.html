@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>成都中产阶级税负看板</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e8edf5 100%);
+    color: #2c3e50;
+    padding: 24px;
+    min-height: 100vh;
+  }
+  .container { max-width: 1400px; margin: 0 auto; }
+  header {
+    background: linear-gradient(135deg, #4a6fa5 0%, #345984 100%);
+    color: white;
+    padding: 28px 32px;
+    border-radius: 16px;
+    margin-bottom: 24px;
+    box-shadow: 0 8px 24px rgba(74,111,165,0.25);
+  }
+  header h1 { font-size: 28px; margin-bottom: 8px; font-weight: 600; }
+  header .subtitle { font-size: 14px; opacity: 0.9; }
+  header .source { font-size: 12px; opacity: 0.75; margin-top: 6px; }
+
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .kpi-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    border-left: 4px solid;
+    transition: transform 0.2s;
+  }
+  .kpi-card:hover { transform: translateY(-2px); }
+  .kpi-card.blue { border-color: #4a6fa5; }
+  .kpi-card.green { border-color: #27ae60; }
+  .kpi-card.orange { border-color: #e67e22; }
+  .kpi-card.red { border-color: #c0392b; }
+  .kpi-card.purple { border-color: #8e44ad; }
+  .kpi-label { font-size: 13px; color: #7f8c8d; margin-bottom: 8px; }
+  .kpi-value { font-size: 26px; font-weight: 700; color: #2c3e50; }
+  .kpi-suffix { font-size: 13px; color: #95a5a6; margin-top: 4px; }
+
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+  .row.triple { grid-template-columns: 1fr 1fr 1fr; }
+  @media (max-width: 900px) {
+    .row, .row.triple { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  }
+  .card h2 {
+    font-size: 17px;
+    margin-bottom: 16px;
+    color: #34495e;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #ecf0f1;
+  }
+  .card-note { font-size: 12px; color: #95a5a6; margin-top: 12px; line-height: 1.6; }
+
+  .chart-wrapper { position: relative; height: 280px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #ecf0f1; }
+  th { background: #f8f9fb; color: #5a6c7d; font-weight: 600; font-size: 13px; }
+  td.num { text-align: right; font-family: "SF Mono", Menlo, monospace; }
+  tr.total td { font-weight: 700; background: #f8f9fb; }
+
+  .ratio-bar {
+    display: flex;
+    height: 32px;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+  .ratio-bar span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  footer {
+    text-align: center;
+    color: #95a5a6;
+    font-size: 12px;
+    padding: 16px;
+    margin-top: 16px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>成都中产阶级税负看板</h1>
+    <div class="subtitle">基于 2024 年成都非私营单位就业人员平均工资 <strong>125,512 元/年</strong> 测算</div>
+    <div class="source">数据来源：成都市统计局、四川省政府、成都住房公积金管理中心、成都住建局</div>
+  </header>
+
+  <!-- KPI Cards -->
+  <section class="kpi-grid">
+    <div class="kpi-card blue">
+      <div class="kpi-label">年工资收入</div>
+      <div class="kpi-value">¥125,512</div>
+      <div class="kpi-suffix">2024 年成都平均工资</div>
+    </div>
+    <div class="kpi-card green">
+      <div class="kpi-label">个人所得税</div>
+      <div class="kpi-value">¥2,098</div>
+      <div class="kpi-suffix">仅占工资 1.67%</div>
+    </div>
+    <div class="kpi-card orange">
+      <div class="kpi-label">个人侧广义税负</div>
+      <div class="kpi-value">¥26,709</div>
+      <div class="kpi-suffix">占工资收入 21.28%</div>
+    </div>
+    <div class="kpi-card red">
+      <div class="kpi-label">整体宏观税费负担</div>
+      <div class="kpi-value">¥64,488</div>
+      <div class="kpi-suffix">占工资收入 51.38%</div>
+    </div>
+    <div class="kpi-card purple">
+      <div class="kpi-label">月均剩余可支配</div>
+      <div class="kpi-value">¥6,038</div>
+      <div class="kpi-suffix">扣除税费/房租/生活后</div>
+    </div>
+  </section>
+
+  <!-- Row 1: 工资端税负 + 三层税负对比 -->
+  <section class="row">
+    <div class="card">
+      <h2>工资端税负构成（个人 vs 公司）</h2>
+      <div class="chart-wrapper"><canvas id="wageBar"></canvas></div>
+      <p class="card-note">企业侧承担的社保、公积金总额（37,779 元）几乎是个人侧总缴纳额（21,427 元）的 1.76 倍，是劳动总成本的隐形大头。</p>
+    </div>
+    <div class="card">
+      <h2>三层税负视角对比</h2>
+      <div class="chart-wrapper"><canvas id="threeLayer"></canvas></div>
+      <p class="card-note">从显性个税（1.67%）→ 个人广义税负（21.28%）→ 含企业侧的整体宏观税负（51.38%），实际承担与表面感知存在显著差距。</p>
+    </div>
+  </section>
+
+  <!-- Row 2: 整体宏观税负构成 + 个人广义税负构成 -->
+  <section class="row">
+    <div class="card">
+      <h2>整体宏观税费负担构成（合计 64,488 元）</h2>
+      <div class="chart-wrapper"><canvas id="macroPie"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>个人广义税负明细（合计 26,709 元）</h2>
+      <div class="chart-wrapper"><canvas id="personalPie"></canvas></div>
+    </div>
+  </section>
+
+  <!-- Row 3: 社保公积金缴纳明细表 -->
+  <section class="row">
+    <div class="card">
+      <h2>个人缴纳社保 & 公积金明细</h2>
+      <table>
+        <thead><tr><th>项目</th><th>比例</th><th class="num">金额（元/年）</th></tr></thead>
+        <tbody>
+          <tr><td>养老保险</td><td>8%</td><td class="num">10,040.96</td></tr>
+          <tr><td>失业保险</td><td>0.4%</td><td class="num">502.05</td></tr>
+          <tr><td>基本医疗保险</td><td>2%</td><td class="num">2,510.24</td></tr>
+          <tr><td>公积金</td><td>5%</td><td class="num">6,275.60</td></tr>
+          <tr class="total"><td>合计</td><td>15.4%</td><td class="num">19,328.85</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h2>公司缴纳社保 & 公积金明细</h2>
+      <table>
+        <thead><tr><th>项目</th><th>比例</th><th class="num">金额（元/年）</th></tr></thead>
+        <tbody>
+          <tr><td>养老保险</td><td>16%</td><td class="num">20,081.92</td></tr>
+          <tr><td>失业保险</td><td>0.6%</td><td class="num">753.07</td></tr>
+          <tr><td>工伤保险</td><td>0.2%</td><td class="num">251.02</td></tr>
+          <tr><td>基本医疗保险</td><td>6.75%</td><td class="num">8,472.06</td></tr>
+          <tr><td>生育保险</td><td>0.8%</td><td class="num">1,004.10</td></tr>
+          <tr><td>大病互助</td><td>0.75%</td><td class="num">941.34</td></tr>
+          <tr><td>公积金</td><td>5%</td><td class="num">6,275.60</td></tr>
+          <tr class="total"><td>合计</td><td>30.1%</td><td class="num">37,779.11</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Row 4: 消费端 + 收入分配 -->
+  <section class="row">
+    <div class="card">
+      <h2>消费端税负（高新区中和街道 40㎡ 套一）</h2>
+      <table>
+        <thead><tr><th>指标</th><th class="num">数值</th></tr></thead>
+        <tbody>
+          <tr><td>月租金（38.38 元/㎡）</td><td class="num">1,535.20 元</td></tr>
+          <tr><td>年租金</td><td class="num">18,422.40 元</td></tr>
+          <tr><td>名义租售比</td><td class="num">4.19%</td></tr>
+          <tr><td>真实加权租售比（剔除土地）</td><td class="num">6.44%</td></tr>
+          <tr><td>显性税负（综合 4%）</td><td class="num">736.90 元</td></tr>
+          <tr><td>隐性税负（土地出让金 70 年摊销）</td><td class="num">2,828.57 元</td></tr>
+          <tr class="total"><td>实质租金税负 / 占租金</td><td class="num">3,565.47 元 / 19.35%</td></tr>
+          <tr><td>生活消费增值税（按 13%）</td><td class="num">1,716.00 元</td></tr>
+        </tbody>
+      </table>
+      <p class="card-note">房屋总价 440,000 元（11,000 元/㎡），土地占比 45%（198,000 元）按 70 年摊销。</p>
+    </div>
+    <div class="card">
+      <h2>年收入 125,512 元的最终去向</h2>
+      <div class="chart-wrapper"><canvas id="incomeFlow"></canvas></div>
+      <div class="ratio-bar">
+        <span style="background:#c0392b;flex:21427.16" title="个人税费">税费</span>
+        <span style="background:#e67e22;flex:18422.40" title="房租">房租</span>
+        <span style="background:#f39c12;flex:13200" title="生活">生活</span>
+        <span style="background:#27ae60;flex:72462.44" title="剩余可支配">剩余</span>
+      </div>
+      <p class="card-note">年度剩余可支配 ≈ 72,462 元，折合 月均 6,038 元。</p>
+    </div>
+  </section>
+
+  <footer>
+    本看板根据《成都中产阶级需要承担的税收.md》数据生成 · 仅供参考，实际税负因个体差异有所不同
+  </footer>
+</div>
+
+<script>
+const palette = {
+  blue:'#4a6fa5', green:'#27ae60', orange:'#e67e22', red:'#c0392b',
+  purple:'#8e44ad', yellow:'#f39c12', cyan:'#16a085', gray:'#95a5a6'
+};
+
+// Chart 1: 工资端税负 (Stacked Bar)
+new Chart(document.getElementById('wageBar'), {
+  type: 'bar',
+  data: {
+    labels: ['个人侧', '企业侧'],
+    datasets: [
+      { label: '个人所得税', data: [2098.32, 0], backgroundColor: palette.red },
+      { label: '养老保险', data: [10040.96, 20081.92], backgroundColor: palette.blue },
+      { label: '医疗保险', data: [2510.24, 8472.06], backgroundColor: palette.green },
+      { label: '公积金', data: [6275.60, 6275.60], backgroundColor: palette.orange },
+      { label: '失业/工伤/生育/大病', data: [502.05, 2949.53], backgroundColor: palette.purple }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'bottom', labels:{ font:{size:11} } } },
+    scales: {
+      x: { stacked: true },
+      y: { stacked: true, ticks: { callback: v => '¥' + v.toLocaleString() } }
+    }
+  }
+});
+
+// Chart 2: 三层税负对比
+new Chart(document.getElementById('threeLayer'), {
+  type: 'bar',
+  data: {
+    labels: ['仅个人所得税', '个人广义税负', '整体宏观税负'],
+    datasets: [{
+      label: '占工资比例 (%)',
+      data: [1.67, 21.28, 51.38],
+      backgroundColor: [palette.green, palette.orange, palette.red]
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: { y: { beginAtZero: true, max: 60, ticks: { callback: v => v + '%' } } }
+  }
+});
+
+// Chart 3: 整体宏观税费构成
+new Chart(document.getElementById('macroPie'), {
+  type: 'doughnut',
+  data: {
+    labels: ['企业社保公积金', '个人社保公积金', '租房实质税负', '个人所得税', '生活消费增值税'],
+    datasets: [{
+      data: [37779.11, 19328.85, 3565.47, 2098.32, 1716],
+      backgroundColor: [palette.red, palette.orange, palette.purple, palette.blue, palette.cyan]
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'right', labels:{ font:{size:11} } },
+      tooltip: { callbacks: { label: c => c.label + ': ¥' + c.parsed.toLocaleString() + ' (' + (c.parsed/64487.75*100).toFixed(1) + '%)' } }
+    }
+  }
+});
+
+// Chart 4: 个人广义税负
+new Chart(document.getElementById('personalPie'), {
+  type: 'doughnut',
+  data: {
+    labels: ['个人社保公积金', '租房实质税负', '个人所得税', '生活消费增值税'],
+    datasets: [{
+      data: [19328.85, 3565.47, 2098.32, 1716],
+      backgroundColor: [palette.orange, palette.purple, palette.blue, palette.cyan]
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'right', labels:{ font:{size:11} } },
+      tooltip: { callbacks: { label: c => c.label + ': ¥' + c.parsed.toLocaleString() + ' (' + (c.parsed/26708.64*100).toFixed(1) + '%)' } }
+    }
+  }
+});
+
+// Chart 5: 收入去向
+new Chart(document.getElementById('incomeFlow'), {
+  type: 'pie',
+  data: {
+    labels: ['个人税费 (17.07%)', '年租金 (14.68%)', '日常生活 (10.52%)', '剩余可支配 (57.73%)'],
+    datasets: [{
+      data: [21427.16, 18422.40, 13200, 72462.44],
+      backgroundColor: [palette.red, palette.orange, palette.yellow, palette.green]
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'right', labels:{ font:{size:11} } },
+      tooltip: { callbacks: { label: c => c.label.split(' ')[0] + ': ¥' + c.parsed.toLocaleString() } }
+    }
+  }
+});
+</script>
+</body>
+</html>

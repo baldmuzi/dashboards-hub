@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dashboards Hub · 数据看板集合</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e8edf5 100%);
+    color: #2c3e50;
+    min-height: 100vh;
+  }
+  .container { max-width: 1280px; margin: 0 auto; padding: 32px 24px; }
+
+  header {
+    background: linear-gradient(135deg, #2c3e50 0%, #4a6fa5 100%);
+    color: white;
+    padding: 48px 40px;
+    border-radius: 20px;
+    margin-bottom: 32px;
+    box-shadow: 0 12px 32px rgba(44,62,80,0.2);
+  }
+  header h1 { font-size: 36px; font-weight: 700; margin-bottom: 12px; }
+  header p { font-size: 16px; opacity: 0.92; max-width: 720px; line-height: 1.6; }
+
+  .toolbar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .search {
+    flex: 1;
+    min-width: 220px;
+    padding: 12px 16px;
+    border: 1px solid #dde3ec;
+    border-radius: 10px;
+    font-size: 15px;
+    background: white;
+    transition: border-color 0.2s;
+  }
+  .search:focus { outline: none; border-color: #4a6fa5; }
+
+  .categories {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+  }
+  .cat-pill {
+    padding: 10px 18px;
+    background: white;
+    border: 1px solid #dde3ec;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #5a6c7d;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .cat-pill:hover { border-color: #4a6fa5; color: #4a6fa5; }
+  .cat-pill.active {
+    background: #2c3e50;
+    border-color: #2c3e50;
+    color: white;
+  }
+  .cat-pill .count {
+    background: rgba(0,0,0,0.1);
+    padding: 1px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+  }
+  .cat-pill.active .count { background: rgba(255,255,255,0.2); }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+  }
+
+  .card {
+    background: white;
+    border-radius: 14px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    transition: all 0.2s;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    border-top: 4px solid;
+    cursor: pointer;
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+  }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+  .card-icon {
+    font-size: 28px;
+    line-height: 1;
+  }
+  .card-category {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: #f0f3f8;
+    color: #5a6c7d;
+    font-weight: 600;
+  }
+  .card h3 {
+    font-size: 18px;
+    margin-bottom: 8px;
+    color: #2c3e50;
+    line-height: 1.4;
+  }
+  .card .subtitle {
+    font-size: 13px;
+    color: #7f8c8d;
+    line-height: 1.5;
+    margin-bottom: 14px;
+    flex-grow: 1;
+  }
+  .card .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .card .tag {
+    font-size: 11px;
+    padding: 3px 8px;
+    background: #f0f3f8;
+    color: #5a6c7d;
+    border-radius: 4px;
+  }
+  .card .meta {
+    font-size: 12px;
+    color: #95a5a6;
+    border-top: 1px solid #ecf0f1;
+    padding-top: 10px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .empty {
+    grid-column: 1/-1;
+    text-align: center;
+    padding: 60px 20px;
+    color: #95a5a6;
+  }
+  .empty h3 { font-size: 18px; margin-bottom: 8px; }
+
+  .section-title {
+    font-size: 14px;
+    color: #7f8c8d;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 14px;
+    font-weight: 600;
+  }
+
+  footer {
+    text-align: center;
+    color: #95a5a6;
+    font-size: 13px;
+    padding: 32px 16px 16px;
+    line-height: 1.7;
+  }
+  footer a { color: #4a6fa5; text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1 id="site-title">Dashboards Hub</h1>
+    <p id="site-desc">多维度数据可视化看板集合</p>
+  </header>
+
+  <div class="toolbar">
+    <input type="text" class="search" id="search" placeholder="搜索看板标题、标签、地区…" />
+  </div>
+
+  <div class="section-title">分类</div>
+  <div class="categories" id="categories"></div>
+
+  <div class="section-title" id="grid-title">全部看板</div>
+  <div class="grid" id="grid"></div>
+
+  <footer>
+    Built with ❤︎ · 静态部署于 GitHub Pages · 添加新看板：编辑根目录 <code>data.json</code>
+  </footer>
+</div>
+
+<script>
+let DATA = null;
+let activeCategory = 'all';
+let searchKeyword = '';
+
+async function load() {
+  const res = await fetch('data.json');
+  DATA = await res.json();
+  document.getElementById('site-title').textContent = DATA.site.title;
+  document.getElementById('site-desc').textContent = DATA.site.description;
+  renderCategories();
+  render();
+  document.getElementById('search').addEventListener('input', e => {
+    searchKeyword = e.target.value.trim().toLowerCase();
+    render();
+  });
+}
+
+function renderCategories() {
+  const wrap = document.getElementById('categories');
+  const allCount = DATA.dashboards.length;
+  const buttons = [
+    { id: 'all', name: '全部', icon: '📊', count: allCount }
+  ].concat(DATA.categories.map(c => ({
+    ...c,
+    count: DATA.dashboards.filter(d => d.category === c.id).length
+  })));
+
+  wrap.innerHTML = buttons.map(c => `
+    <div class="cat-pill ${c.id === activeCategory ? 'active' : ''}" data-id="${c.id}">
+      <span>${c.icon}</span>
+      <span>${c.name}</span>
+      <span class="count">${c.count}</span>
+    </div>
+  `).join('');
+
+  wrap.querySelectorAll('.cat-pill').forEach(el => {
+    el.addEventListener('click', () => {
+      activeCategory = el.dataset.id;
+      renderCategories();
+      render();
+    });
+  });
+}
+
+function categoryMeta(id) {
+  return DATA.categories.find(c => c.id === id) || { name: id, icon: '📊', color: '#95a5a6' };
+}
+
+function render() {
+  const grid = document.getElementById('grid');
+  let list = DATA.dashboards;
+  if (activeCategory !== 'all') list = list.filter(d => d.category === activeCategory);
+  if (searchKeyword) {
+    list = list.filter(d => {
+      const hay = [d.title, d.subtitle, (d.tags || []).join(' '), d.source].join(' ').toLowerCase();
+      return hay.includes(searchKeyword);
+    });
+  }
+
+  document.getElementById('grid-title').textContent =
+    activeCategory === 'all' ? `全部看板（${list.length}）` : `${categoryMeta(activeCategory).name}（${list.length}）`;
+
+  if (list.length === 0) {
+    grid.innerHTML = `<div class="empty"><h3>暂无匹配的看板</h3><p>试试其他关键词或分类</p></div>`;
+    return;
+  }
+
+  grid.innerHTML = list.map(d => {
+    const cat = categoryMeta(d.category);
+    return `
+      <a class="card" href="${d.path}" style="border-top-color:${cat.color}">
+        <div class="card-header">
+          <div class="card-icon">${cat.icon}</div>
+          <div class="card-category">${cat.name}</div>
+        </div>
+        <h3>${d.title}</h3>
+        <div class="subtitle">${d.subtitle}</div>
+        <div class="tags">
+          ${(d.tags || []).map(t => `<span class="tag">${t}</span>`).join('')}
+        </div>
+        <div class="meta">
+          <span>${d.source || ''}</span>
+          <span>${d.updated || ''}</span>
+        </div>
+      </a>
+    `;
+  }).join('');
+}
+
+load();
+</script>
+</body>
+</html>

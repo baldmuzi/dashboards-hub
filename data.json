@@ -1,0 +1,66 @@
+{
+  "site": {
+    "title": "Dashboards Hub",
+    "subtitle": "多维度数据可视化看板集合",
+    "description": "汇集各行各业的数据看板：税收、经济、房地产、人口、教育、医疗、能源等。"
+  },
+  "categories": [
+    {
+      "id": "tax",
+      "name": "税收与财政",
+      "icon": "💰",
+      "description": "个税、社保、宏观税负等",
+      "color": "#4a6fa5"
+    },
+    {
+      "id": "economy",
+      "name": "宏观经济",
+      "icon": "📈",
+      "description": "GDP、CPI、就业、消费",
+      "color": "#27ae60"
+    },
+    {
+      "id": "housing",
+      "name": "房地产",
+      "icon": "🏠",
+      "description": "房价、租金、土地",
+      "color": "#e67e22"
+    },
+    {
+      "id": "population",
+      "name": "人口与社会",
+      "icon": "👥",
+      "description": "人口结构、老龄化、教育",
+      "color": "#8e44ad"
+    },
+    {
+      "id": "industry",
+      "name": "行业洞察",
+      "icon": "🏭",
+      "description": "制造业、服务业、科技",
+      "color": "#16a085"
+    }
+  ],
+  "dashboards": [
+    {
+      "id": "tax-chengdu",
+      "category": "tax",
+      "title": "成都中产阶级税负",
+      "subtitle": "基于 2024 年成都非私营平均工资测算",
+      "tags": ["成都", "个税", "社保", "宏观税负"],
+      "path": "dashboards/tax/chengdu/index.html",
+      "updated": "2026-05-14",
+      "source": "成都市统计局、四川省政府"
+    },
+    {
+      "id": "tax-shenzhen",
+      "category": "tax",
+      "title": "深圳劳动者税负（非私营 vs 私营）",
+      "subtitle": "对比 2024 年深圳两类单位的真实税负水平",
+      "tags": ["深圳", "私营对比", "个税", "社保"],
+      "path": "dashboards/tax/shenzhen/index.html",
+      "updated": "2026-05-14",
+      "source": "深圳市统计局、深圳社保局、深圳公积金中心"
+    }
+  ]
+}
