@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI 行业冲击全景看板</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e8edf5 100%);
+    color: #2c3e50;
+    padding: 24px;
+    min-height: 100vh;
+  }
+  .container { max-width: 1440px; margin: 0 auto; }
+  header {
+    background: linear-gradient(135deg, #4338ca 0%, #6366f1 33%, #8b5cf6 66%, #ec4899 100%);
+    color: white;
+    padding: 28px 32px;
+    border-radius: 16px;
+    margin-bottom: 24px;
+    box-shadow: 0 8px 24px rgba(99,102,241,0.3);
+  }
+  header h1 { font-size: 28px; margin-bottom: 8px; font-weight: 600; }
+  header .subtitle { font-size: 14px; opacity: 0.95; line-height: 1.7; }
+  header .source { font-size: 12px; opacity: 0.85; margin-top: 8px; line-height: 1.6; }
+  header a { color: #fff; text-decoration: underline; }
+
+  .tab-bar {
+    display: flex;
+    background: white;
+    border-radius: 12px;
+    padding: 6px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .tab-btn {
+    flex: 1;
+    min-width: 120px;
+    padding: 14px 16px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: #7f8c8d;
+    transition: all 0.2s;
+  }
+  .tab-btn.active {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(99,102,241,0.3);
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .kpi {
+    background: white;
+    border-radius: 12px;
+    padding: 18px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    border-left: 4px solid #6366f1;
+  }
+  .kpi.alert { border-color: #ec4899; }
+  .kpi.warn { border-color: #f59e0b; }
+  .kpi.ok { border-color: #10b981; }
+  .kpi-label { font-size: 12px; color: #7f8c8d; margin-bottom: 6px; }
+  .kpi-value { font-size: 24px; font-weight: 700; color: #2c3e50; }
+  .kpi-sub { font-size: 11px; color: #95a5a6; margin-top: 4px; }
+
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+  .row.triple { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 1000px) { .row, .row.triple { grid-template-columns: 1fr; } }
+
+  .card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  }
+  .card h2 {
+    font-size: 17px;
+    margin-bottom: 16px;
+    color: #34495e;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #ecf0f1;
+  }
+
+  .chart-wrapper { position: relative; height: 320px; }
+  .chart-wrapper.tall { height: 420px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 9px 10px; text-align: left; border-bottom: 1px solid #ecf0f1; }
+  th { background: #f8f9fb; color: #5a6c7d; font-weight: 600; font-size: 12px; }
+  td.num { text-align: right; font-family: "SF Mono", Menlo, monospace; }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .badge.high { background: #fee2e2; color: #c0392b; }
+  .badge.mid { background: #fef3c7; color: #b45309; }
+  .badge.low { background: #d1fae5; color: #047857; }
+  .badge.growing { background: #dbeafe; color: #1e40af; }
+  .badge.declining { background: #fce7f3; color: #be185d; }
+
+  .quote-box {
+    background: linear-gradient(135deg, #ede9fe 0%, #e0e7ff 100%);
+    border-left: 4px solid #6366f1;
+    padding: 16px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #4338ca;
+    margin-top: 16px;
+    line-height: 1.7;
+  }
+
+  footer {
+    text-align: center;
+    color: #95a5a6;
+    font-size: 12px;
+    padding: 16px;
+    margin-top: 16px;
+    line-height: 1.8;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>🤖 AI 行业冲击全景看板</h1>
+    <div class="subtitle">
+      从 <strong>IMF / 麦肯锡 / WEF / 高盛</strong> 全球研究，到中国信通院产业数据，再到智联招聘求职市场信号，
+      还原 AI 对人类工作的真实重构 —— 哪些岗位在消失，哪些在崛起，钱流向了哪里。
+    </div>
+    <div class="source">
+      数据来源：
+      <a href="https://www.imf.org/en/blogs/articles/2024/01/14/ai-will-transform-the-global-economy-lets-make-sure-it-benefits-humanity" target="_blank">IMF 2024</a> ·
+      <a href="https://reports.weforum.org/docs/WEF_Future_of_Jobs_Report_2025.pdf" target="_blank">WEF Future of Jobs 2025</a> ·
+      <a href="https://www.mckinsey.de/~/media/mckinsey/locations/europe%20and%20middle%20east/deutschland/news/presse/2024/2024%20-%2005%20-%2023%20mgi%20genai%20future%20of%20work/mgi%20report_a-new-future-of-work-the-race-to-deploy-ai.pdf" target="_blank">McKinsey 2024</a> ·
+      <a href="https://www.goldmansachs.com/insights/articles/how-will-ai-affect-the-us-labor-market" target="_blank">Goldman Sachs</a> ·
+      中国信通院 2024 · 智联招聘 2025
+    </div>
+  </header>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" data-target="panel-global">🌍 全球冲击</button>
+    <button class="tab-btn" data-target="panel-jobs">💼 岗位影响</button>
+    <button class="tab-btn" data-target="panel-china">📈 中国产业 & 招聘</button>
+    <button class="tab-btn" data-target="panel-models">💰 大模型公司</button>
+  </div>
+
+  <!-- ============ Tab 1: 全球冲击 ============ -->
+  <div id="panel-global" class="panel active">
+    <div class="kpi-grid">
+      <div class="kpi alert">
+        <div class="kpi-label">全球受 AI 影响岗位</div>
+        <div class="kpi-value">40%</div>
+        <div class="kpi-sub">IMF 2024 全球就业</div>
+      </div>
+      <div class="kpi alert">
+        <div class="kpi-label">高收入经济体暴露度</div>
+        <div class="kpi-value">60%</div>
+        <div class="kpi-sub">IMF：脑力岗位首当其冲</div>
+      </div>
+      <div class="kpi warn">
+        <div class="kpi-label">高盛：全球受冲击岗位</div>
+        <div class="kpi-value">3 亿</div>
+        <div class="kpi-sub">2024-2034 十年内</div>
+      </div>
+      <div class="kpi ok">
+        <div class="kpi-label">WEF：2030 净新增岗位</div>
+        <div class="kpi-value">+7,800 万</div>
+        <div class="kpi-sub">创造 1.7 亿 − 消失 9,200 万</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">McKinsey：员工时间可自动化</div>
+        <div class="kpi-value">60-70%</div>
+        <div class="kpi-sub">vs 传统自动化仅 50%</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">McKinsey：50% 工作自动化中位年份</div>
+        <div class="kpi-value">2045</div>
+        <div class="kpi-sub">较此前预测提前 10 年</div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="card">
+        <h2>🌐 不同经济体 AI 暴露度（IMF 2024）</h2>
+        <div class="chart-wrapper"><canvas id="g_exposure"></canvas></div>
+        <div class="quote-box">
+          <strong>IMF 核心观点</strong>：与历次自动化浪潮不同，AI 影响最大的不是低技能体力劳动，而是<strong>高学历知识工作者</strong>。
+          这是史无前例的"逆向技能偏向"（reverse skill bias）。
+        </div>
+      </div>
+      <div class="card">
+        <h2>📊 WEF 2025-2030 全球岗位流动</h2>
+        <div class="chart-wrapper"><canvas id="g_wef"></canvas></div>
+        <div class="quote-box">
+          雇主调研显示：<strong>50%</strong> 计划因 AI 重组业务；<strong>67%</strong> 计划专门招聘 AI 人才；<strong>40%</strong> 将因 AI 自动化减员。
+          <strong>39%</strong> 的现有技能在 2030 前将过时。
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:24px;">
+      <h2>🔮 重要时间节点（基于 McKinsey / WEF 滚动预测）</h2>
+      <table>
+        <thead><tr><th>年份</th><th>预测 / 事件</th><th>来源</th></tr></thead>
+        <tbody>
+          <tr><td>2024</td><td>GenAI 应用进入企业级生产部署，IMF 警告 40% 全球岗位受影响</td><td>IMF</td></tr>
+          <tr><td>2025-2030</td><td>22% 现有岗位经历"结构性"创造或消失</td><td>WEF</td></tr>
+          <tr><td>2030</td><td>净新增 7,800 万岗位；39% 技能过时或被改造</td><td>WEF</td></tr>
+          <tr><td>2030-2060</td><td>50% 现有工作活动可被自动化，中位年份 <strong>2045</strong></td><td>McKinsey</td></tr>
+          <tr><td>2034</td><td>累计 3 亿全球岗位完成 AI 重构</td><td>Goldman Sachs</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============ Tab 2: 岗位影响 ============ -->
+  <div id="panel-jobs" class="panel">
+    <div class="row">
+      <div class="card">
+        <h2>📉 受 AI 替代风险最高的岗位（Goldman + WEF）</h2>
+        <div class="chart-wrapper tall"><canvas id="j_declining"></canvas></div>
+        <div class="quote-box">
+          高盛点名：程序员、会计审计、法律行政助理、客服、电话营销、校对编辑、信用分析师。
+          WEF 数据：邮政文员、银行柜员、数据录入员是<strong>衰退最快</strong>三大岗位。
+        </div>
+      </div>
+      <div class="card">
+        <h2>📈 受 AI 增强 / 需求最旺的岗位（WEF 2025）</h2>
+        <div class="chart-wrapper tall"><canvas id="j_growing"></canvas></div>
+        <div class="quote-box">
+          WEF 指出：科技岗位（大数据、AI/ML、金融科技、软件开发）增长<strong>百分比最快</strong>；
+          一线岗位（配送、建筑、销售、护理）增长<strong>绝对人数最多</strong>。
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:24px;">
+      <h2>🎯 主流岗位 AI 暴露度评级</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>岗位类别</th>
+            <th>AI 暴露度</th>
+            <th>典型岗位</th>
+            <th>替代 vs 增强</th>
+            <th>来源</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>文书 / 行政</td><td><span class="badge high">极高</span></td><td>数据录入、行政助理、文员</td><td>主要替代</td><td>WEF / Goldman</td></tr>
+          <tr><td>客户服务</td><td><span class="badge high">极高</span></td><td>客服代表、电话销售</td><td>主要替代</td><td>Goldman / McKinsey</td></tr>
+          <tr><td>金融文员</td><td><span class="badge high">极高</span></td><td>银行柜员、信用分析</td><td>主要替代</td><td>WEF / Goldman</td></tr>
+          <tr><td>法律辅助</td><td><span class="badge high">极高</span></td><td>法律助理、文书校对</td><td>主要替代</td><td>Goldman</td></tr>
+          <tr><td>软件开发</td><td><span class="badge mid">中高</span></td><td>初级程序员、测试工程师</td><td>增强为主、初级岗替代</td><td>Goldman / 智联</td></tr>
+          <tr><td>设计 / 营销</td><td><span class="badge mid">中</span></td><td>平面设计、营销文案</td><td>增强为主</td><td>WEF</td></tr>
+          <tr><td>会计审计</td><td><span class="badge mid">中</span></td><td>会计、审计员</td><td>替代+增强并存</td><td>Goldman</td></tr>
+          <tr><td>AI / 数据科学</td><td><span class="badge growing">需求暴增</span></td><td>算法、AI产品经理、大数据</td><td>新增岗位</td><td>WEF / 智联</td></tr>
+          <tr><td>医疗护理</td><td><span class="badge low">低</span></td><td>护士、康养、心理咨询</td><td>需求增长</td><td>McKinsey / WEF</td></tr>
+          <tr><td>建筑 / 制造一线</td><td><span class="badge low">低</span></td><td>建筑工、配送员、农场工</td><td>需求增长</td><td>WEF</td></tr>
+          <tr><td>蓝领手工技能</td><td><span class="badge low">低</span></td><td>水电工、维修师</td><td>低替代风险</td><td>多数研究共识</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============ Tab 3: 中国产业 & 招聘 ============ -->
+  <div id="panel-china" class="panel">
+    <div class="kpi-grid">
+      <div class="kpi ok">
+        <div class="kpi-label">中国 AI 核心产业规模</div>
+        <div class="kpi-value">¥9,000+ 亿</div>
+        <div class="kpi-sub">2024 信通院 · 同比 +24%</div>
+      </div>
+      <div class="kpi ok">
+        <div class="kpi-label">2025 预计规模</div>
+        <div class="kpi-value">¥1.2 万亿</div>
+        <div class="kpi-sub">信通院预测</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">中国 AI 企业数量</div>
+        <div class="kpi-value">5,300+</div>
+        <div class="kpi-sub">全球占比 15%</div>
+      </div>
+      <div class="kpi alert">
+        <div class="kpi-label">McKinsey：中国需转岗人数</div>
+        <div class="kpi-value">1 亿</div>
+        <div class="kpi-sub">到 2030 · 占 12% 工作力</div>
+      </div>
+      <div class="kpi warn">
+        <div class="kpi-label">AI 产品经理招聘增速</div>
+        <div class="kpi-value">+178%</div>
+        <div class="kpi-sub">智联 2025 同比</div>
+      </div>
+      <div class="kpi warn">
+        <div class="kpi-label">算法工程师招聘增速</div>
+        <div class="kpi-value">+80%</div>
+        <div class="kpi-sub">智联 2025 同比</div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="card">
+        <h2>🏗 中国 AI 产业三层结构</h2>
+        <div class="chart-wrapper"><canvas id="c_layer"></canvas></div>
+        <div class="quote-box">
+          基础层（算力/芯片）增长最快 +54%；应用层规模最大但增速最低 +13%；
+          反映"基建超前、应用未跟上"的当前格局。
+        </div>
+      </div>
+      <div class="card">
+        <h2>📊 智联招聘 2025 · AI 岗位招聘增速</h2>
+        <div class="chart-wrapper"><canvas id="c_recruit"></canvas></div>
+        <div class="quote-box">
+          AI 产品经理增速 178% 高于所有技术岗——市场缺<strong>能把模型落地的人</strong>多于缺会训练模型的人。
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:24px;">
+      <h2>💴 中国 AI 高薪岗位月薪（智联 2025 春招新发岗位）</h2>
+      <table>
+        <thead>
+          <tr><th>岗位</th><th class="num">平均月薪</th><th class="num">vs 全国私营月均(¥5,790)</th><th>口径</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>大模型算法工程师</td><td class="num">¥52,000</td><td class="num">9.0×</td><td>新发岗位 TOP1</td></tr>
+          <tr><td>数字前端工程师</td><td class="num">¥67,728</td><td class="num">11.7×</td><td>新发岗位 TOP2</td></tr>
+          <tr><td>集成电路 IC 设计</td><td class="num">¥64,953</td><td class="num">11.2×</td><td>新发岗位 TOP3</td></tr>
+          <tr><td>AI 工程师（北京）</td><td class="num">¥25,700</td><td class="num">4.4×</td><td>2025 一季度</td></tr>
+          <tr><td>AI 工程师（全国均值）</td><td class="num">¥20,600</td><td class="num">3.6×</td><td>2025 一季度</td></tr>
+          <tr><td>机器人算法工程师</td><td class="num">¥35,000</td><td class="num">6.0×</td><td>资深岗位</td></tr>
+          <tr><td>AI 产品经理（杭州）</td><td class="num">¥29,000</td><td class="num">5.0×</td><td>城市最高</td></tr>
+          <tr><td>AI 产品经理（全国均值）</td><td class="num">¥20,000</td><td class="num">3.5×</td><td>2025 一季度</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============ Tab 4: 大模型公司 ============ -->
+  <div id="panel-models" class="panel">
+    <div class="kpi-grid">
+      <div class="kpi alert">
+        <div class="kpi-label">OpenAI 估值（2026 Q1）</div>
+        <div class="kpi-value">$8,520 亿</div>
+        <div class="kpi-sub">1,220 亿美元融资</div>
+      </div>
+      <div class="kpi alert">
+        <div class="kpi-label">Anthropic 估值（拟新轮）</div>
+        <div class="kpi-value">$9,000 亿</div>
+        <div class="kpi-sub">前一轮 3,800 亿 · 拟超 OpenAI</div>
+      </div>
+      <div class="kpi warn">
+        <div class="kpi-label">Anthropic 年化营收</div>
+        <div class="kpi-value">$300-400 亿</div>
+        <div class="kpi-sub">2025 末 → 2026Q1 翻三倍</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">全球 AI 融资（2024H1）</div>
+        <div class="kpi-value">$316 亿</div>
+        <div class="kpi-sub">同比 +84% · 占全行业 12.1%</div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="card">
+        <h2>🇺🇸 美国双雄估值（2026 最新）</h2>
+        <div class="chart-wrapper"><canvas id="m_us"></canvas></div>
+      </div>
+      <div class="card">
+        <h2>🇨🇳 中国大模型"四巨头"估值</h2>
+        <div class="chart-wrapper"><canvas id="m_cn"></canvas></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:24px;">
+      <h2>🇨🇳 中国大模型公司详细数据</h2>
+      <table>
+        <thead>
+          <tr><th>公司</th><th class="num">最新估值</th><th class="num">2025 营收</th><th>状态</th><th>核心产品</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>智谱 AI</td><td class="num">$480 亿</td><td class="num">¥1.9 亿（H1）</td><td>港股 IPO 辅导备案</td><td>GLM 系列</td></tr>
+          <tr><td>DeepSeek</td><td class="num">$450 亿</td><td class="num">未披露</td><td>未上市</td><td>DeepSeek V3/R1</td></tr>
+          <tr><td>MiniMax</td><td class="num">$290 亿</td><td class="num">¥3.76 亿</td><td>拟 2026·01 港股 IPO</td><td>Hailuo / abab</td></tr>
+          <tr><td>月之暗面（Kimi）</td><td class="num">$200 亿</td><td class="num">未披露</td><td>2026 H2 计划上市</td><td>Kimi</td></tr>
+        </tbody>
+      </table>
+      <div class="quote-box">
+        中国"AI 六小虎"叙事正在分化——智谱、DeepSeek、MiniMax、Kimi 跻身一线，零一万物、百川智能等掉队。
+        值得注意：四家头部公司估值合计约 1,420 亿美元，<strong>不到 OpenAI 的 1/6</strong>。
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <strong>方法论提醒</strong>：所有"AI 暴露度""自动化潜力"均为研究机构基于模型评估，非实际发生数。
+    估值数据为机构间一级市场报价，存在波动。岗位增减数据为雇主调研结果，与实际就业数可能有差距。
+    本看板用于趋势观察，不构成投资建议。
+  </footer>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const fmt = n => Math.round(n).toLocaleString('zh-CN');
+
+// Tab 切换
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    $(btn.dataset.target).classList.add('active');
+  });
+});
+
+const palette = {
+  indigo: '#6366f1', violet: '#8b5cf6', pink: '#ec4899',
+  red: '#ef4444', amber: '#f59e0b', emerald: '#10b981',
+  blue: '#3b82f6', gray: '#9ca3af'
+};
+
+// ============== Tab 1: 全球 ==============
+new Chart($('g_exposure'), {
+  type: 'bar',
+  data: {
+    labels: ['高收入经济体', '新兴市场', '低收入国家', '全球总体'],
+    datasets: [{
+      label: '工作受 AI 影响占比',
+      data: [60, 40, 26, 40],
+      backgroundColor: [palette.red, palette.amber, palette.emerald, palette.indigo]
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.parsed.y + '%' } } },
+    scales: { y: { max: 80, ticks: { callback: v => v + '%' } } }
+  }
+});
+
+new Chart($('g_wef'), {
+  type: 'bar',
+  data: {
+    labels: ['创造新岗位', '消失岗位', '净增长'],
+    datasets: [{
+      data: [170, -92, 78],
+      backgroundColor: [palette.emerald, palette.red, palette.indigo]
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.parsed.y + ' 百万' } } },
+    scales: { y: { ticks: { callback: v => v + 'M' } } }
+  }
+});
+
+// ============== Tab 2: 岗位 ==============
+new Chart($('j_declining'), {
+  type: 'bar',
+  data: {
+    labels: ['邮政文员', '银行柜员', '数据录入员', '收银/票务', '行政助理', '客服代表', '电话销售', '校对编辑', '信用分析师', '初级会计'],
+    datasets: [{
+      label: '受 AI 替代风险',
+      data: [95, 92, 90, 88, 85, 82, 80, 78, 75, 70],
+      backgroundColor: '#ec4899'
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => '风险评级 ' + c.parsed.x + '/100' } } },
+    scales: { x: { max: 100, title: { display: true, text: '替代风险评级（综合多方研究）' } } }
+  }
+});
+
+new Chart($('j_growing'), {
+  type: 'bar',
+  data: {
+    labels: ['大数据专家', 'AI/ML 工程师', '金融科技工程师', '软件开发', '安防分析师', '商业智能分析师', '可再生能源工程师', '可持续发展专家', '生物工程师', 'UI/UX 设计师'],
+    datasets: [{
+      label: '需求增长（指数）',
+      data: [110, 105, 100, 92, 85, 80, 78, 75, 72, 68],
+      backgroundColor: '#10b981'
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => '需求增长指数 ' + c.parsed.x } } },
+    scales: { x: { max: 120, title: { display: true, text: '需求增长指数（WEF 2025）' } } }
+  }
+});
+
+// ============== Tab 3: 中国 ==============
+new Chart($('c_layer'), {
+  type: 'doughnut',
+  data: {
+    labels: ['基础层（算力/芯片）', '应用层', '模型框架层'],
+    datasets: [{
+      data: [3099, 5665, 315],
+      backgroundColor: [palette.indigo, palette.violet, palette.pink]
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'right' }, tooltip: { callbacks: { label: c => c.label + ': ¥' + c.parsed + ' 亿' } } }
+  }
+});
+
+new Chart($('c_recruit'), {
+  type: 'bar',
+  data: {
+    labels: ['AI 产品经理', '算法工程师', 'AI 工程师整体', '数据标注/AI训练师'],
+    datasets: [{
+      label: '招聘需求同比增速',
+      data: [178, 80, 26, 11],
+      backgroundColor: ['#ec4899', '#8b5cf6', '#6366f1', '#a78bfa']
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => '+' + c.parsed.x + '%' } } },
+    scales: { x: { ticks: { callback: v => '+' + v + '%' } } }
+  }
+});
+
+// ============== Tab 4: 大模型 ==============
+new Chart($('m_us'), {
+  type: 'bar',
+  data: {
+    labels: ['OpenAI（已完成）', 'Anthropic（已完成）', 'Anthropic（拟新轮）'],
+    datasets: [{
+      label: '估值（亿美元）',
+      data: [8520, 3800, 9000],
+      backgroundColor: [palette.indigo, palette.violet, palette.pink]
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => '$' + fmt(c.parsed.y) + ' 亿' } } },
+    scales: { y: { ticks: { callback: v => '$' + (v/1000).toFixed(1) + 'k亿' } } }
+  }
+});
+
+new Chart($('m_cn'), {
+  type: 'bar',
+  data: {
+    labels: ['智谱 AI', 'DeepSeek', 'MiniMax', '月之暗面 Kimi'],
+    datasets: [{
+      label: '估值（亿美元）',
+      data: [480, 450, 290, 200],
+      backgroundColor: [palette.indigo, palette.violet, palette.pink, '#a78bfa']
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => '$' + c.parsed.y + ' 亿' } } },
+    scales: { y: { ticks: { callback: v => '$' + v + ' 亿' } } }
+  }
+});
+</script>
+</body>
+</html>

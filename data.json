@@ -53,6 +53,13 @@
       "icon": "💵",
       "description": "工资分布、行业对比、收入分位",
       "color": "#16a085"
+    },
+    {
+      "id": "ai",
+      "name": "AI 与未来工作",
+      "icon": "🤖",
+      "description": "AI 冲击、岗位变化、大模型公司",
+      "color": "#6366f1"
     }
   ],
   "dashboards": [
@@ -105,6 +112,16 @@
       "path": "dashboards/income/distribution/index.html",
       "updated": "2026-05-14",
       "source": "国家统计局、各市统计局、智联招聘、58同城"
+    },
+    {
+      "id": "ai-impact",
+      "category": "ai",
+      "title": "AI 行业冲击全景",
+      "subtitle": "全球冲击 / 岗位影响 / 中国产业 / 大模型公司估值 四视图",
+      "tags": ["AI", "未来工作", "大模型", "OpenAI", "Anthropic", "智谱", "DeepSeek"],
+      "path": "dashboards/ai/impact/index.html",
+      "updated": "2026-05-14",
+      "source": "IMF、WEF、McKinsey、Goldman Sachs、信通院、智联招聘"
     }
   ]
 }
