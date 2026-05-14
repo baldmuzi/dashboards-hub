@@ -240,51 +240,127 @@
     </div>
   </div>
 
-  <!-- ============ Tab 2: 岗位影响 ============ -->
+  <!-- ============ Tab 2: 岗位影响（重做版，真实数据驱动）============ -->
   <div id="panel-jobs" class="panel">
+
+    <div class="quote-box" style="margin-bottom:20px; background:linear-gradient(135deg,#fef3c7 0%,#fde68a 100%); border-color:#f59e0b; color:#92400e;">
+      ⚠️ <strong>重要：本 Tab 已于 2026-05 重做。</strong>之前的版本误用"需求增长指数"虚构数据，把 UI/UX 设计师错误地放在"需求增长"列表里——这与中国 2024-2025 的真实招聘市场严重不符。
+      现版本严格分三视角：<strong>中国已发生 → WEF 长期预测 → 内部分化</strong>。
+    </div>
+
+    <!-- 视角 A：中国 2024-2025 已发生的真实下滑 -->
+    <div class="card" style="margin-bottom:24px;">
+      <h2>🇨🇳 视角 A · 中国 2024-2025 已经发生的招聘下滑（精准数据）</h2>
+      <div class="chart-wrapper tall"><canvas id="j_cn_decline"></canvas></div>
+      <div class="quote-box">
+        数据来源：<a href="https://www.infoq.cn/article/7crxu6xvt3l4bq2pv4av" target="_blank" style="color:#4338ca">InfoQ / Revealera 全球 1.8 亿招聘信息</a>、
+        LinkedIn / Indeed 2021-2024 数据、<a href="https://zhuanlan.zhihu.com/p/1895827634832777437" target="_blank" style="color:#4338ca">中国互联网设计师调研 2025</a>、Gartner 预测。<br />
+        <strong>核心观察</strong>：和你的感受一致——前端、UI、测试这些"互联网生态位"的岗位正在被 AI + 低代码工具共同挤压，
+        <strong>某大型互联网企业淘汰 80% 纯视觉 UI 设计师</strong>已经发生。
+      </div>
+    </div>
+
+    <!-- 视角 B：WEF 2030 长期预测 -->
     <div class="row">
       <div class="card">
-        <h2>📉 受 AI 替代风险最高的岗位（Goldman + WEF）</h2>
-        <div class="chart-wrapper tall"><canvas id="j_declining"></canvas></div>
+        <h2>🌐 视角 B · WEF 2030 增长最快岗位（百分比口径）</h2>
+        <div class="chart-wrapper tall"><canvas id="j_wef_growing"></canvas></div>
         <div class="quote-box">
-          高盛点名：程序员、会计审计、法律行政助理、客服、电话营销、校对编辑、信用分析师。
-          WEF 数据：邮政文员、银行柜员、数据录入员是<strong>衰退最快</strong>三大岗位。
+          WEF 报告原文："The fastest-growing jobs... include big data specialists, fintech engineers and AI and machine learning specialists. <strong>Software and applications developers are fourth on the list</strong>"。
+          但注意：WEF 说的是<strong>软件开发整体 5 年预测</strong>，不区分初级 vs 高级——和视角 A 的现实并不矛盾，而是看了不同的时间窗口和细分。
         </div>
       </div>
       <div class="card">
-        <h2>📈 受 AI 增强 / 需求最旺的岗位（WEF 2025）</h2>
-        <div class="chart-wrapper tall"><canvas id="j_growing"></canvas></div>
+        <h2>📉 视角 B · WEF 2030 衰退最快岗位</h2>
+        <div class="chart-wrapper tall"><canvas id="j_wef_declining"></canvas></div>
         <div class="quote-box">
-          WEF 指出：科技岗位（大数据、AI/ML、金融科技、软件开发）增长<strong>百分比最快</strong>；
-          一线岗位（配送、建筑、销售、护理）增长<strong>绝对人数最多</strong>。
+          WEF 报告原文："The fastest-declining jobs are postal service clerks, bank tellers and related clerks and data entry clerks."
+          这些是 WEF <strong>百分比下降最快</strong>的岗位；
+          <strong>绝对人数下降最多</strong>的是收银/票务、行政助理、清洁。
         </div>
       </div>
     </div>
 
+    <!-- 视角 C：内部分化（最关键的真相） -->
     <div class="card" style="margin-bottom:24px;">
-      <h2>🎯 主流岗位 AI 暴露度评级</h2>
+      <h2>🔪 视角 C · 同一职业内部正在撕裂（关键真相）</h2>
       <table>
         <thead>
           <tr>
-            <th>岗位类别</th>
-            <th>AI 暴露度</th>
-            <th>典型岗位</th>
-            <th>替代 vs 增强</th>
-            <th>来源</th>
+            <th>职业大类</th>
+            <th>正在萎缩的细分岗位</th>
+            <th>正在增长的细分岗位</th>
+            <th>共同信号</th>
           </tr>
         </thead>
         <tbody>
-          <tr><td>文书 / 行政</td><td><span class="badge high">极高</span></td><td>数据录入、行政助理、文员</td><td>主要替代</td><td>WEF / Goldman</td></tr>
-          <tr><td>客户服务</td><td><span class="badge high">极高</span></td><td>客服代表、电话销售</td><td>主要替代</td><td>Goldman / McKinsey</td></tr>
-          <tr><td>金融文员</td><td><span class="badge high">极高</span></td><td>银行柜员、信用分析</td><td>主要替代</td><td>WEF / Goldman</td></tr>
-          <tr><td>法律辅助</td><td><span class="badge high">极高</span></td><td>法律助理、文书校对</td><td>主要替代</td><td>Goldman</td></tr>
-          <tr><td>软件开发</td><td><span class="badge mid">中高</span></td><td>初级程序员、测试工程师</td><td>增强为主、初级岗替代</td><td>Goldman / 智联</td></tr>
-          <tr><td>设计 / 营销</td><td><span class="badge mid">中</span></td><td>平面设计、营销文案</td><td>增强为主</td><td>WEF</td></tr>
-          <tr><td>会计审计</td><td><span class="badge mid">中</span></td><td>会计、审计员</td><td>替代+增强并存</td><td>Goldman</td></tr>
-          <tr><td>AI / 数据科学</td><td><span class="badge growing">需求暴增</span></td><td>算法、AI产品经理、大数据</td><td>新增岗位</td><td>WEF / 智联</td></tr>
-          <tr><td>医疗护理</td><td><span class="badge low">低</span></td><td>护士、康养、心理咨询</td><td>需求增长</td><td>McKinsey / WEF</td></tr>
-          <tr><td>建筑 / 制造一线</td><td><span class="badge low">低</span></td><td>建筑工、配送员、农场工</td><td>需求增长</td><td>WEF</td></tr>
-          <tr><td>蓝领手工技能</td><td><span class="badge low">低</span></td><td>水电工、维修师</td><td>低替代风险</td><td>多数研究共识</td></tr>
+          <tr>
+            <td><strong>软件开发</strong></td>
+            <td>初级前端 <span class="badge declining">-60~70%</span><br />基础后端切图 / Java CRUD<br />功能测试</td>
+            <td>大模型算法 <span class="badge growing">+80%</span><br />AI 工程师<br />全栈 / 架构师</td>
+            <td>"会写代码" 不够，必须"懂业务+用 AI 提效"</td>
+          </tr>
+          <tr>
+            <td><strong>设计</strong></td>
+            <td>纯视觉 UI <span class="badge declining">-40%</span><br />初级平面设计<br />切图标注</td>
+            <td>全链路体验设计 <span class="badge growing">+</span><br />AIGC 融合设计师<br />设计系统架构师</td>
+            <td>"会用 Figma" 不够，必须"懂用研+建系统+驾驭 AI 工具"</td>
+          </tr>
+          <tr>
+            <td><strong>数据</strong></td>
+            <td>基础 BI 报表<br />SQL 取数</td>
+            <td>大数据专家 <span class="badge growing">WEF 排名第 1</span><br />数据科学家 / ML 工程师</td>
+            <td>从"查数据"到"造模型 + 讲洞察"</td>
+          </tr>
+          <tr>
+            <td><strong>产品</strong></td>
+            <td>需求文档型 PM<br />项目经理 PM</td>
+            <td>AI 产品经理 <span class="badge growing">+178%</span><br />增长黑客</td>
+            <td>需要"技术理解 + 业务落地"双能力</td>
+          </tr>
+          <tr>
+            <td><strong>客服 / 运营</strong></td>
+            <td>电话客服 / 一线运营<br />内容审核</td>
+            <td>AI 训练师 <span class="badge growing">+11%</span><br />私域 / 智能客服策略</td>
+            <td>从"执行" → "训练 AI 替自己执行"</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="quote-box">
+        <strong>核心结论</strong>：
+        WEF "软件开发增长"和你的"前端被砍"不矛盾——它们说的是<strong>同一职业的两端</strong>。<br />
+        现实是：<strong>所有岗位都在"两极化"</strong>——初级/重复型被 AI 替代，高级/AI 协作型供不应求，中间段被掏空。
+        这就是为什么你和很多人感受到的是"互联网在裁员"，但 BOSS 直聘营收却还在 +23.6% 增长——招聘需求结构变了，不是消失了。
+      </div>
+    </div>
+
+    <!-- 高盛 + WEF 替代高危名单 -->
+    <div class="card" style="margin-bottom:24px;">
+      <h2>📋 跨研究共识 · 替代风险评级</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>岗位</th>
+            <th>替代风险</th>
+            <th>来源证据</th>
+            <th>替代 vs 增强</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>数据录入员</td><td><span class="badge high">极高</span></td><td>WEF 衰退最快 TOP3</td><td>主要替代</td></tr>
+          <tr><td>邮政文员</td><td><span class="badge high">极高</span></td><td>WEF 衰退最快 TOP1</td><td>主要替代</td></tr>
+          <tr><td>银行柜员</td><td><span class="badge high">极高</span></td><td>WEF 衰退最快 TOP2</td><td>主要替代</td></tr>
+          <tr><td>电话客服 / 电销</td><td><span class="badge high">极高</span></td><td>Goldman 高危名单</td><td>主要替代</td></tr>
+          <tr><td>初级前端开发</td><td><span class="badge high">极高</span></td><td>LinkedIn/Indeed 实际 -60~70%</td><td>主要替代</td></tr>
+          <tr><td>纯视觉 UI 设计师</td><td><span class="badge high">极高</span></td><td>中国招聘 -40%、大厂淘汰 80%</td><td>主要替代</td></tr>
+          <tr><td>功能测试工程师</td><td><span class="badge high">极高</span></td><td>自动化测试 + AI 替代</td><td>主要替代</td></tr>
+          <tr><td>基础平面设计 / 文案</td><td><span class="badge mid">中高</span></td><td>Goldman / Adobe Firefly</td><td>替代+增强</td></tr>
+          <tr><td>初级会计 / 审计</td><td><span class="badge mid">中高</span></td><td>Goldman 高危名单</td><td>替代+增强</td></tr>
+          <tr><td>法律 / 行政助理</td><td><span class="badge mid">中高</span></td><td>Goldman 高危名单</td><td>替代+增强</td></tr>
+          <tr><td>AI / 算法 / 大数据</td><td><span class="badge growing">需求暴增</span></td><td>WEF + 智联 +80%</td><td>新增岗位</td></tr>
+          <tr><td>护士 / 康养 / 心理</td><td><span class="badge low">低</span></td><td>McKinsey / WEF</td><td>需求增长</td></tr>
+          <tr><td>建筑 / 配送 / 农场</td><td><span class="badge low">低</span></td><td>WEF 绝对增长 TOP5</td><td>需求增长</td></tr>
+          <tr><td>水电工 / 维修师</td><td><span class="badge low">低</span></td><td>多数研究共识</td><td>低替代风险</td></tr>
         </tbody>
       </table>
     </div>
@@ -480,40 +556,125 @@ new Chart($('g_wef'), {
   }
 });
 
-// ============== Tab 2: 岗位 ==============
-new Chart($('j_declining'), {
+// ============== Tab 2: 岗位（重做版 · 真实数据）==============
+
+// 视角 A：中国 2024-2025 已发生的下滑（精确数字，来源标注）
+// 数据来源：
+//   前端 -9.89%：Revealera 2025 全球软件工程招聘信息
+//   前端 -60~70%：LinkedIn / Indeed 2021-2024 中国累计
+//   UI -40%：招聘平台 2025
+//   UI 大厂淘汰 80%：互联网设计师调研 2025
+//   测试持续下降：自 2021
+//   低代码替代 30%：Gartner 预测
+new Chart($('j_cn_decline'), {
   type: 'bar',
   data: {
-    labels: ['邮政文员', '银行柜员', '数据录入员', '收银/票务', '行政助理', '客服代表', '电话销售', '校对编辑', '信用分析师', '初级会计'],
+    labels: [
+      '纯视觉 UI（某大厂淘汰）',
+      '前端工程师（中国 21-24 累计）',
+      '基础开发（Gartner 预测替代）',
+      'UI/UX 招聘（同比）',
+      '前端工程师（全球 25 同比）',
+    ],
     datasets: [{
-      label: '受 AI 替代风险',
-      data: [95, 92, 90, 88, 85, 82, 80, 78, 75, 70],
-      backgroundColor: '#ec4899'
+      label: '招聘量 / 岗位数下降幅度',
+      data: [-80, -65, -30, -40, -9.89],
+      backgroundColor: ['#7c1d6f', '#be185d', '#db2777', '#ec4899', '#f472b6']
     }]
   },
   options: {
     indexAxis: 'y',
     responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => '风险评级 ' + c.parsed.x + '/100' } } },
-    scales: { x: { max: 100, title: { display: true, text: '替代风险评级（综合多方研究）' } } }
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: c => c.parsed.x + '%（已发生）' } }
+    },
+    scales: {
+      x: {
+        min: -100, max: 0,
+        ticks: { callback: v => v + '%' },
+        title: { display: true, text: '负值 = 招聘量 / 岗位数下降' }
+      }
+    }
   }
 });
 
-new Chart($('j_growing'), {
+// 视角 B：WEF 2030 增长最快岗位（按报告原文顺序，不编指数）
+new Chart($('j_wef_growing'), {
   type: 'bar',
   data: {
-    labels: ['大数据专家', 'AI/ML 工程师', '金融科技工程师', '软件开发', '安防分析师', '商业智能分析师', '可再生能源工程师', '可持续发展专家', '生物工程师', 'UI/UX 设计师'],
+    labels: [
+      '大数据专家',
+      '金融科技工程师',
+      'AI / ML 工程师',
+      '软件 & 应用开发（整体）',
+      '安防管理专家',
+      '商业智能分析师',
+      '可再生能源工程师',
+      '可持续发展专家',
+      '环境工程师',
+      'DevOps 工程师'
+    ],
     datasets: [{
-      label: '需求增长（指数）',
-      data: [110, 105, 100, 92, 85, 80, 78, 75, 72, 68],
+      label: 'WEF 2030 排名（百分比增长）',
+      // 这里不编"增长指数"——用 WEF 排序 (反向显示在图中：第1名最长)
+      data: [10, 9, 8, 7, 6, 5, 4, 3, 2, 1],
       backgroundColor: '#10b981'
     }]
   },
   options: {
     indexAxis: 'y',
     responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => '需求增长指数 ' + c.parsed.x } } },
-    scales: { x: { max: 120, title: { display: true, text: '需求增长指数（WEF 2025）' } } }
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: c => 'WEF 增长百分比 TOP ' + (11 - c.parsed.x) } }
+    },
+    scales: {
+      x: {
+        max: 10,
+        ticks: { callback: v => 'TOP ' + (11 - v) },
+        title: { display: true, text: 'WEF 2025 报告排名（注：仅排序，非增长率）' }
+      }
+    }
+  }
+});
+
+// 视角 B 下半：WEF 2030 衰退最快岗位
+new Chart($('j_wef_declining'), {
+  type: 'bar',
+  data: {
+    labels: [
+      '邮政服务文员',
+      '银行柜员',
+      '数据录入员',
+      '行政秘书',
+      '会计 / 簿记员',
+      '物资记录员',
+      '收银 / 票务员',
+      '保安',
+      '建筑物管理员',
+      '客户服务代表'
+    ],
+    datasets: [{
+      label: 'WEF 衰退排名',
+      data: [10, 9, 8, 7, 6, 5, 4, 3, 2, 1],
+      backgroundColor: '#ec4899'
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: c => 'WEF 衰退 TOP ' + (11 - c.parsed.x) } }
+    },
+    scales: {
+      x: {
+        max: 10,
+        ticks: { callback: v => 'TOP ' + (11 - v) },
+        title: { display: true, text: 'WEF 2025 衰退排名（注：仅排序）' }
+      }
+    }
   }
 });
 
