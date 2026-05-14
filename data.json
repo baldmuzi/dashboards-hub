@@ -78,6 +78,16 @@
       "path": "dashboards/pension/guangdong/index.html",
       "updated": "2026-05-14",
       "source": "人社部、广东省人社厅、深圳市人社局、各市统计局"
+    },
+    {
+      "id": "housing-cities",
+      "category": "housing",
+      "title": "房贷月供 & 房价工资比 · 8 大城市",
+      "subtitle": "等额本息计算器 + 一线/新一线横向对比：你的工资能买几年房？",
+      "tags": ["房贷", "房价收入比", "8城对比", "LPR", "首付"],
+      "path": "dashboards/housing/cities/index.html",
+      "updated": "2026-05-14",
+      "source": "国家统计局、央行LPR、各市统计局、房天下、贝壳"
     }
   ]
 }

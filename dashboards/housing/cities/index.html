@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>房贷月供 & 房价工资比 · 8 大城市对比</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e8edf5 100%);
+    color: #2c3e50;
+    padding: 24px;
+    min-height: 100vh;
+  }
+  .container { max-width: 1440px; margin: 0 auto; }
+  header {
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 50%, #f39c12 100%);
+    color: white;
+    padding: 28px 32px;
+    border-radius: 16px;
+    margin-bottom: 24px;
+    box-shadow: 0 8px 24px rgba(211,84,0,0.25);
+  }
+  header h1 { font-size: 28px; margin-bottom: 8px; font-weight: 600; }
+  header .subtitle { font-size: 14px; opacity: 0.95; line-height: 1.7; }
+  header .source { font-size: 12px; opacity: 0.85; margin-top: 8px; line-height: 1.6; }
+  header a { color: #fff; text-decoration: underline; }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 1000px) { .layout { grid-template-columns: 1fr; } }
+
+  .card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  }
+  .card h2 {
+    font-size: 17px;
+    margin-bottom: 16px;
+    color: #34495e;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #ecf0f1;
+  }
+
+  .input-group { margin-bottom: 16px; }
+  .input-group label {
+    display: block;
+    font-size: 13px;
+    color: #5a6c7d;
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+  .input-group input, .input-group select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #dde3ec;
+    border-radius: 8px;
+    font-size: 14px;
+    background: white;
+  }
+  .input-group input:focus, .input-group select:focus {
+    outline: none;
+    border-color: #e67e22;
+  }
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .slider-row input[type=range] { flex: 1; }
+  .slider-value {
+    min-width: 64px;
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 13px;
+    color: #d35400;
+    font-weight: 600;
+    text-align: right;
+  }
+  .pill-group {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .pill {
+    flex: 1;
+    min-width: 50px;
+    padding: 6px 8px;
+    background: #f0f3f8;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    text-align: center;
+    transition: all 0.15s;
+  }
+  .pill:hover { background: #e8edf5; }
+  .pill.active {
+    background: #d35400;
+    color: white;
+    border-color: #d35400;
+  }
+
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .kpi {
+    background: linear-gradient(135deg, #fff8f0 0%, #fde8d2 100%);
+    border-radius: 10px;
+    padding: 16px;
+    border-left: 4px solid #d35400;
+  }
+  .kpi-label { font-size: 12px; color: #7f8c8d; margin-bottom: 6px; }
+  .kpi-value { font-size: 22px; font-weight: 700; color: #2c3e50; }
+  .kpi-sub { font-size: 11px; color: #95a5a6; margin-top: 4px; }
+  .kpi.alert { background: linear-gradient(135deg, #fdf2f0 0%, #fadbd8 100%); border-color: #c0392b; }
+  .kpi.warn { background: linear-gradient(135deg, #fffaed 0%, #fcf3cf 100%); border-color: #f39c12; }
+  .kpi.ok { background: linear-gradient(135deg, #f0fbf4 0%, #d5f5e3 100%); border-color: #27ae60; }
+
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 900px) { .row { grid-template-columns: 1fr; } }
+
+  .chart-wrapper { position: relative; height: 280px; }
+  .chart-wrapper.tall { height: 380px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #ecf0f1; }
+  th { background: #f8f9fb; color: #5a6c7d; font-weight: 600; font-size: 12px; }
+  td.num { text-align: right; font-family: "SF Mono", Menlo, monospace; }
+  tr.highlight { background: #fff8f0; font-weight: 600; }
+
+  .formula-box {
+    background: #f8f9fb;
+    border-left: 3px solid #d35400;
+    padding: 14px 18px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #5a6c7d;
+    line-height: 1.7;
+  }
+  .formula-box code {
+    background: #fff;
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: #d35400;
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 12px;
+  }
+
+  .warning {
+    font-size: 12px;
+    color: #c0392b;
+    background: #fdf2f0;
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-top: 8px;
+    line-height: 1.5;
+  }
+
+  footer {
+    text-align: center;
+    color: #95a5a6;
+    font-size: 12px;
+    padding: 16px;
+    margin-top: 16px;
+    line-height: 1.8;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>房贷月供 & 房价工资比 · 8 大城市对比</h1>
+    <div class="subtitle">
+      用<strong>等额本息法定公式</strong>反推：在不同城市买一套同样的房子，月供 / 总利息 / 不吃不喝多少年还清，是怎样的差距。
+      所有房价、工资、利率、首付均来自<strong>统计局、央行、住建部</strong>。
+    </div>
+    <div class="source">
+      数据来源：
+      <a href="https://www.stats.gov.cn/sj/zxfb/202505/t20250516_1959826.html" target="_blank">国家统计局 2024 工资数据</a> ·
+      <a href="https://www.stats.gov.cn/sj/zxfb/202604/t20260416_1963320.html" target="_blank">国家统计局 70 城房价</a> ·
+      中国人民银行 LPR 2026·04 公告 ·
+      房天下、贝壳、安居客 2026 挂牌均价
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- ============ 左：参数 ============ -->
+    <div class="card">
+      <h2>买房参数</h2>
+
+      <div class="input-group">
+        <label>目标城市</label>
+        <select id="p_city"></select>
+      </div>
+
+      <div class="input-group">
+        <label>房屋面积（㎡）</label>
+        <div class="pill-group" id="p_area_group">
+          <div class="pill" data-val="60">60</div>
+          <div class="pill" data-val="70">70</div>
+          <div class="pill active" data-val="90">90</div>
+          <div class="pill" data-val="120">120</div>
+          <div class="pill" data-val="144">144</div>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>首付比例</label>
+        <div class="slider-row">
+          <input type="range" id="p_down" min="15" max="60" value="30" step="5" />
+          <span class="slider-value" id="p_down_v">30%</span>
+        </div>
+        <div class="warning" id="p_down_note">央行 2024 政策：全国首套二套统一最低 15%</div>
+      </div>
+
+      <div class="input-group">
+        <label>贷款年限</label>
+        <div class="pill-group" id="p_years_group">
+          <div class="pill" data-val="10">10年</div>
+          <div class="pill" data-val="15">15年</div>
+          <div class="pill" data-val="20">20年</div>
+          <div class="pill" data-val="25">25年</div>
+          <div class="pill active" data-val="30">30年</div>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>贷款类型</label>
+        <div class="pill-group" id="p_loan_group">
+          <div class="pill active" data-val="commercial">纯商贷</div>
+          <div class="pill" data-val="provident">纯公积金</div>
+          <div class="pill" data-val="combo">组合贷</div>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>贷款利率（年化）</label>
+        <div class="slider-row">
+          <input type="range" id="p_rate" min="2" max="6" value="3.5" step="0.05" />
+          <span class="slider-value" id="p_rate_v">3.50%</span>
+        </div>
+        <div class="warning" id="p_rate_note">2026·04 央行 5 年期以上 LPR：3.5% · 公积金首套：2.6%</div>
+      </div>
+
+      <div class="input-group">
+        <label>家庭月收入（元，可两人合计）</label>
+        <input type="number" id="p_income" min="3000" step="500" value="20000" />
+        <div class="warning" id="p_income_note">默认按所选城市非私营月均工资填入</div>
+      </div>
+    </div>
+
+    <!-- ============ 右：KPI + 主图 ============ -->
+    <div>
+      <div class="kpi-grid" id="kpi"></div>
+
+      <div class="card" style="margin-bottom:24px;">
+        <h2>30 年还款流水：本金 vs 利息（每月）</h2>
+        <div class="chart-wrapper"><canvas id="chart_amort"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8 城市横向对比 -->
+  <div class="row">
+    <div class="card">
+      <h2>8 城房价工资比（按所选面积 / 城市非私营年薪）</h2>
+      <div class="chart-wrapper tall"><canvas id="chart_ratio"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>8 城月供 vs 月均工资</h2>
+      <div class="chart-wrapper tall"><canvas id="chart_burden"></canvas></div>
+    </div>
+  </div>
+
+  <!-- 计算明细 + 公式 -->
+  <div class="row">
+    <div class="card">
+      <h2>本次测算明细</h2>
+      <table id="detail_table"></table>
+    </div>
+    <div class="card">
+      <h2>等额本息计算公式</h2>
+      <div class="formula-box">
+        <strong>每月月供</strong> M =<br />
+        <code>P × r × (1+r)<sup>n</sup> ÷ [(1+r)<sup>n</sup> − 1]</code>
+        <br /><br />
+        其中：<br />
+        · <code>P</code> = 贷款本金（房价 − 首付）<br />
+        · <code>r</code> = 月利率 = 年利率 ÷ 12<br />
+        · <code>n</code> = 总还款月数（年限 × 12）
+        <br /><br />
+        <strong>本金总成本</strong> = M × n<br />
+        <strong>利息总额</strong> = 月供 × n − 本金<br />
+        <strong>房价工资比</strong> = 房屋总价 ÷ 年薪<br />
+        <strong>月供收入比</strong> = 月供 ÷ 月薪
+      </div>
+      <div class="warning" style="margin-top:14px;">
+        <strong>警戒线</strong>：月供占月收入 30% 以下安全 · 30-50% 压力大 · 50%+ 银行不批 / 生活质量明显下降
+        <br /><strong>国际经验</strong>：房价工资比合理区间 3-6 倍，超 9 倍即明显泡沫风险
+      </div>
+    </div>
+  </div>
+
+  <!-- 城市基础数据表 -->
+  <div class="card" style="margin-bottom:24px;">
+    <h2>8 城基础参数（2024 工资 + 2026 二手房均价）</h2>
+    <table id="cities_table">
+      <thead>
+        <tr>
+          <th>城市</th>
+          <th class="num">2024 非私营年薪</th>
+          <th class="num">月均工资</th>
+          <th class="num">二手房均价 (元/㎡)</th>
+          <th class="num">90㎡ 总价</th>
+          <th class="num">房价工资比</th>
+          <th>数据口径</th>
+        </tr>
+      </thead>
+      <tbody id="cities_tbody"></tbody>
+    </table>
+    <p style="font-size:12px;color:#95a5a6;margin-top:10px;line-height:1.7">
+      工资数据：上海/北京来自 <a href="https://www.stats.gov.cn/sj/zxfb/202505/t20250516_1959826.html" target="_blank" style="color:#d35400">国家统计局 2024 公报</a>；深圳/杭州/广州/成都来自各市统计局公报；武汉为市级在岗职工口径；西安市级 2024 数据未公开，采用陕西省非私营 111,921 元/年。<br />
+      房价数据：北京、上海、广州、杭州、成都、武汉、西安来自房天下 2026·05 全国房价指数；深圳来自安居客 2025·04 挂牌均价。
+    </p>
+  </div>
+
+  <footer>
+    <strong>政策参考</strong>：
+    2024 年 5 月央行 / 国家金融监督管理总局发文：商业性个人住房贷款不再区分首套二套，统一最低首付比例 15%；
+    2026·04 LPR 5 年期以上 3.5%（连续 11 个月维持）；
+    2026·01 公积金贷款首套 5 年期以上 2.6%、二套 3.075%
+    <br />本看板仅供参考，实际贷款审批以银行为准。
+  </footer>
+</div>
+
+<script>
+// ================ 权威数据集 ================
+// 工资：各市统计局 2024 年公报 / 国家统计局《中国统计年鉴 2025》
+// 房价：房天下 2026·05 全国房价指数；深圳安居客 2025·04
+const CITIES = [
+  { name: '上海', salary: 239557, price: 51264, note: '工资来自国家统计局年鉴' },
+  { name: '北京', salary: 224608, price: 55275, note: '工资来自国家统计局年鉴' },
+  { name: '深圳', salary: 174478, price: 53427, note: '深圳市统计局' },
+  { name: '杭州', salary: 162774, price: 30385, note: '杭州市统计局' },
+  { name: '广州', salary: 159312, price: 30285, note: '广州市统计局' },
+  { name: '成都', salary: 125512, price: 14406, note: '成都市统计局' },
+  { name: '武汉', salary: 112917, price: 12773, note: '武汉市统计局（在岗职工口径）' },
+  { name: '西安', salary: 111921, price: 12948, note: '陕西省（市级 2024 未公开）' }
+];
+
+// ================ UI 初始化 ================
+const $ = id => document.getElementById(id);
+const fmt = n => Math.round(n).toLocaleString('zh-CN');
+const fmtW = n => (n/10000).toFixed(1) + '万';
+const pct = n => (n*100).toFixed(1) + '%';
+
+const citySel = $('p_city');
+CITIES.forEach((c,i) => {
+  const opt = document.createElement('option');
+  opt.value = i;
+  opt.textContent = `${c.name}（年薪 ¥${fmt(c.salary)} · 房价 ¥${fmt(c.price)}/㎡）`;
+  citySel.appendChild(opt);
+});
+
+let state = {
+  cityIdx: 0,
+  area: 90,
+  down: 30,
+  years: 30,
+  loan: 'commercial',
+  rate: 3.5,
+  income: 0,
+  incomeManual: false
+};
+
+// 自动按城市填月工资
+function autoFillIncome() {
+  if (state.incomeManual) return;
+  const m = Math.round(CITIES[state.cityIdx].salary / 12);
+  state.income = m;
+  $('p_income').value = m;
+}
+
+// 利率自动调整（贷款类型变化时）
+function autoSetRate() {
+  if (state.loan === 'commercial') state.rate = 3.5;
+  else if (state.loan === 'provident') state.rate = 2.6;
+  else if (state.loan === 'combo') state.rate = 3.05;
+  $('p_rate').value = state.rate;
+  $('p_rate_v').textContent = state.rate.toFixed(2) + '%';
+}
+
+function bindPills(groupId, callback) {
+  const group = $(groupId);
+  group.querySelectorAll('.pill').forEach(p => {
+    p.addEventListener('click', () => {
+      group.querySelectorAll('.pill').forEach(x => x.classList.remove('active'));
+      p.classList.add('active');
+      callback(p.dataset.val);
+    });
+  });
+}
+
+citySel.addEventListener('change', e => { state.cityIdx = +e.target.value; autoFillIncome(); recalc(); });
+$('p_down').addEventListener('input', e => { state.down = +e.target.value; $('p_down_v').textContent = state.down + '%'; recalc(); });
+$('p_rate').addEventListener('input', e => { state.rate = +e.target.value; $('p_rate_v').textContent = state.rate.toFixed(2) + '%'; recalc(); });
+$('p_income').addEventListener('input', e => { state.income = +e.target.value; state.incomeManual = true; recalc(); });
+bindPills('p_area_group', v => { state.area = +v; recalc(); });
+bindPills('p_years_group', v => { state.years = +v; recalc(); });
+bindPills('p_loan_group', v => { state.loan = v; autoSetRate(); recalc(); });
+
+// ================ 核心计算 ================
+function calcMortgage(P, annualRate, years) {
+  // 等额本息
+  const r = annualRate / 100 / 12;
+  const n = years * 12;
+  if (r === 0) return { monthly: P/n, totalPay: P, totalInterest: 0 };
+  const monthly = P * r * Math.pow(1+r, n) / (Math.pow(1+r, n) - 1);
+  const totalPay = monthly * n;
+  const totalInterest = totalPay - P;
+
+  // 每月本金/利息拆分（用于图表）
+  const schedule = [];
+  let balance = P;
+  for (let i = 0; i < n; i++) {
+    const interest = balance * r;
+    const principal = monthly - interest;
+    balance -= principal;
+    schedule.push({ month: i+1, principal, interest, balance });
+  }
+  return { monthly, totalPay, totalInterest, schedule };
+}
+
+function calculate(p) {
+  const city = CITIES[p.cityIdx];
+  const totalPrice = city.price * p.area;
+  const downPayment = totalPrice * p.down / 100;
+  const loanPrincipal = totalPrice - downPayment;
+  const mort = calcMortgage(loanPrincipal, p.rate, p.years);
+  const monthIncome = p.income;
+  const monthBurden = monthIncome > 0 ? mort.monthly / monthIncome : 0;
+  const yearsToPayoff = monthIncome > 0 ? totalPrice / (monthIncome * 12) : 0;
+  const priceIncomeRatio = totalPrice / city.salary;
+
+  return {
+    city, totalPrice, downPayment, loanPrincipal, mort,
+    monthIncome, monthBurden, yearsToPayoff, priceIncomeRatio
+  };
+}
+
+// ================ 渲染 ================
+let chartAmort, chartRatio, chartBurden;
+
+function recalc() {
+  const r = calculate(state);
+
+  // KPI
+  const burdenColor = r.monthBurden < 0.3 ? 'ok' : r.monthBurden < 0.5 ? 'warn' : 'alert';
+  const ratioColor = r.priceIncomeRatio < 6 ? 'ok' : r.priceIncomeRatio < 9 ? 'warn' : 'alert';
+
+  $('kpi').innerHTML = `
+    <div class="kpi">
+      <div class="kpi-label">房屋总价</div>
+      <div class="kpi-value">¥${fmtW(r.totalPrice)}</div>
+      <div class="kpi-sub">${state.area}㎡ × ${fmt(r.city.price)}/㎡</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">首付</div>
+      <div class="kpi-value">¥${fmtW(r.downPayment)}</div>
+      <div class="kpi-sub">${state.down}% · 贷款 ¥${fmtW(r.loanPrincipal)}</div>
+    </div>
+    <div class="kpi ${burdenColor}">
+      <div class="kpi-label">月供</div>
+      <div class="kpi-value">¥${fmt(r.mort.monthly)}</div>
+      <div class="kpi-sub">${state.years}年 · ${state.rate.toFixed(2)}%</div>
+    </div>
+    <div class="kpi ${burdenColor}">
+      <div class="kpi-label">月供占月薪比</div>
+      <div class="kpi-value">${pct(r.monthBurden)}</div>
+      <div class="kpi-sub">${r.monthBurden < 0.3 ? '安全区' : r.monthBurden < 0.5 ? '压力大' : '危险/不可贷'}</div>
+    </div>
+    <div class="kpi ${ratioColor}">
+      <div class="kpi-label">房价工资比</div>
+      <div class="kpi-value">${r.priceIncomeRatio.toFixed(1)}</div>
+      <div class="kpi-sub">国际合理区间 3-6 · 泡沫线 9</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">不吃不喝年数</div>
+      <div class="kpi-value">${r.yearsToPayoff.toFixed(1)}</div>
+      <div class="kpi-sub">不算利息</div>
+    </div>
+  `;
+
+  // 明细表
+  $('detail_table').innerHTML = `
+    <tbody>
+      <tr><td>城市</td><td class="num">${r.city.name}</td></tr>
+      <tr><td>单价</td><td class="num">¥${fmt(r.city.price)}/㎡</td></tr>
+      <tr><td>面积</td><td class="num">${state.area} ㎡</td></tr>
+      <tr class="highlight"><td>房屋总价</td><td class="num">¥${fmt(r.totalPrice)}</td></tr>
+      <tr><td>首付 ${state.down}%</td><td class="num">¥${fmt(r.downPayment)}</td></tr>
+      <tr><td>贷款本金</td><td class="num">¥${fmt(r.loanPrincipal)}</td></tr>
+      <tr><td>贷款年限 / 月数</td><td class="num">${state.years}年 / ${state.years*12}月</td></tr>
+      <tr><td>年化利率</td><td class="num">${state.rate.toFixed(2)}%</td></tr>
+      <tr class="highlight"><td>月供（等额本息）</td><td class="num">¥${fmt(r.mort.monthly)}</td></tr>
+      <tr><td>还款总额</td><td class="num">¥${fmt(r.mort.totalPay)}</td></tr>
+      <tr><td>利息总额</td><td class="num">¥${fmt(r.mort.totalInterest)}</td></tr>
+      <tr><td>利息 / 本金</td><td class="num">${(r.mort.totalInterest/r.loanPrincipal*100).toFixed(1)}%</td></tr>
+      <tr><td>家庭月收入</td><td class="num">¥${fmt(r.monthIncome)}</td></tr>
+      <tr class="highlight"><td>月供 / 月薪</td><td class="num">${pct(r.monthBurden)}</td></tr>
+      <tr><td>扣除月供后剩余</td><td class="num">¥${fmt(r.monthIncome - r.mort.monthly)}</td></tr>
+      <tr class="highlight"><td>房价工资比</td><td class="num">${r.priceIncomeRatio.toFixed(2)}</td></tr>
+    </tbody>
+  `;
+
+  drawAmortChart(r);
+  drawRatioChart();
+  drawBurdenChart();
+  renderCitiesTable();
+}
+
+function drawAmortChart(r) {
+  const schedule = r.mort.schedule || [];
+  // 每年的累计本金 + 利息
+  const labels = [];
+  const principals = [];
+  const interests = [];
+  for (let y = 1; y <= state.years; y++) {
+    const slice = schedule.slice((y-1)*12, y*12);
+    const pSum = slice.reduce((a,b) => a + b.principal, 0);
+    const iSum = slice.reduce((a,b) => a + b.interest, 0);
+    labels.push('第' + y + '年');
+    principals.push(pSum);
+    interests.push(iSum);
+  }
+
+  if (chartAmort) chartAmort.destroy();
+  chartAmort = new Chart($('chart_amort'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: '本金', data: principals, backgroundColor: '#27ae60' },
+        { label: '利息', data: interests, backgroundColor: '#e67e22' }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom' },
+        tooltip: { callbacks: { label: c => c.dataset.label + ': ¥' + fmt(c.parsed.y) } }
+      },
+      scales: {
+        x: { stacked: true },
+        y: { stacked: true, ticks: { callback: v => '¥' + (v/10000).toFixed(0) + '万' } }
+      }
+    }
+  });
+}
+
+function drawRatioChart() {
+  // 8 城以所选面积计算房价工资比（用各市自己平均薪资）
+  const list = CITIES.map(c => ({
+    name: c.name,
+    ratio: (c.price * state.area) / c.salary,
+    price: c.price * state.area,
+    salary: c.salary
+  })).sort((a,b) => b.ratio - a.ratio);
+
+  if (chartRatio) chartRatio.destroy();
+  chartRatio = new Chart($('chart_ratio'), {
+    type: 'bar',
+    data: {
+      labels: list.map(x => x.name),
+      datasets: [{
+        label: '房价工资比',
+        data: list.map(x => x.ratio),
+        backgroundColor: list.map(x =>
+          x.ratio < 6 ? '#27ae60' : x.ratio < 9 ? '#f39c12' : '#c0392b'
+        )
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: {
+          label: c => '房价工资比: ' + c.parsed.x.toFixed(1) + ' 倍',
+          afterLabel: c => `房屋总价: ¥${fmt(list[c.dataIndex].price)}\n年薪: ¥${fmt(list[c.dataIndex].salary)}`
+        }}
+      },
+      scales: { x: { title: { display: true, text: '倍数（年薪买几年房）' } } }
+    }
+  });
+}
+
+function drawBurdenChart() {
+  // 8 城同样面积、同样贷款条件下，月供 vs 月薪
+  const list = CITIES.map(c => {
+    const total = c.price * state.area;
+    const dp = total * state.down / 100;
+    const loan = total - dp;
+    const m = calcMortgage(loan, state.rate, state.years).monthly;
+    const ms = c.salary / 12;
+    return { name: c.name, monthly: m, monthSalary: ms, burden: m / ms };
+  });
+
+  if (chartBurden) chartBurden.destroy();
+  chartBurden = new Chart($('chart_burden'), {
+    type: 'bar',
+    data: {
+      labels: list.map(x => x.name),
+      datasets: [
+        {
+          label: '月供',
+          data: list.map(x => x.monthly),
+          backgroundColor: '#e67e22'
+        },
+        {
+          label: '月均工资',
+          data: list.map(x => x.monthSalary),
+          backgroundColor: '#3498db'
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom' },
+        tooltip: { callbacks: {
+          label: c => c.dataset.label + ': ¥' + fmt(c.parsed.y),
+          afterLabel: c => '月供/月薪: ' + pct(list[c.dataIndex].burden)
+        } }
+      },
+      scales: { y: { ticks: { callback: v => '¥' + (v/1000).toFixed(0) + 'k' } } }
+    }
+  });
+}
+
+function renderCitiesTable() {
+  $('cities_tbody').innerHTML = CITIES.map(c => {
+    const total90 = c.price * 90;
+    const ratio = total90 / c.salary;
+    return `
+      <tr>
+        <td>${c.name}</td>
+        <td class="num">${fmt(c.salary)}</td>
+        <td class="num">${fmt(c.salary/12)}</td>
+        <td class="num">${fmt(c.price)}</td>
+        <td class="num">${fmtW(total90)}</td>
+        <td class="num" style="color:${ratio < 6 ? '#27ae60' : ratio < 9 ? '#f39c12' : '#c0392b'};font-weight:600">${ratio.toFixed(1)}</td>
+        <td style="font-size:11px;color:#95a5a6">${c.note}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// 启动
+autoFillIncome();
+recalc();
+</script>
+</body>
+</html>
