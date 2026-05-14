@@ -188,7 +188,8 @@
     <h1>养老金替代率倒推 · 广东各市</h1>
     <div class="subtitle">
       基于<strong>国发〔2005〕38号</strong>的法定计算公式，反推你退休时能拿多少钱、占退休前工资的比例（替代率）。
-      所有公式与参数均来自人社部、广东省人社厅、各市公告——<strong>不编造数据</strong>。
+      <strong>工资统一采用 2024 年城镇私营单位年平均工资</strong>——更贴近普通劳动者实际收入水平。
+      所有公式与参数均来自人社部、广东省人社厅、各市公告。
     </div>
     <div class="source">
       数据来源：
@@ -321,7 +322,7 @@
       <thead>
         <tr>
           <th>城市</th>
-          <th class="num">非私营平均年薪</th>
+          <th class="num">私营单位平均年薪</th>
           <th class="num">月平均工资</th>
           <th class="num">养老金计发基数</th>
           <th class="num">"本市平均人"缴费指数</th>
@@ -330,7 +331,9 @@
       <tbody id="cities_tbody"></tbody>
     </table>
     <p style="font-size:12px;color:#95a5a6;margin-top:10px;line-height:1.6">
-      数据说明：非私营平均年薪来自<a href="https://www.gd.gov.cn/zwgk/sjfb/mssj/rjkzpsr/content/post_4738798.html" target="_blank" style="color:#6a3093">广东省统计局 2024 公报</a>及各市统计局；计发基数：深圳 11,181 元/月（深人社发〔2024〕57号），其余各市统一为 9,307 元/月（粤人社发〔2024〕34号）。
+      <strong>工资口径：城镇私营单位 2024 年平均工资</strong>。深圳、广州、东莞、珠海、佛山、惠州、清远、河源、汕头 9 市来自各市统计局 2024 年公报；
+      <strong>中山、湛江、云浮</strong> 市级数据未公开，采用 <a href="https://stats.gd.gov.cn/tjkx185/content/post_4730845.html" target="_blank" style="color:#6a3093">广东省统计局公报</a> 公布的所属片区均值（珠三角 83,496 / 粤西 59,979 / 粤北 62,275）。<br />
+      计发基数：深圳 11,181 元/月（深人社发〔2024〕57号），其余各市统一为 9,307 元/月（粤人社发〔2024〕34号）。
     </p>
   </div>
 
@@ -343,23 +346,24 @@
 </div>
 
 <script>
-// =============== 基础数据（全部来自官方源） ===============
+// =============== 基础数据（全部来自官方源 · 口径：城镇私营单位 2024）===============
+// 工资：各市统计局 2024 公报 / 广东省统计局 2024 公报
+// 中山、湛江、云浮 市级未公开，采用所属片区均值（珠三角/粤西/粤北）
+// 计发基数：深圳特殊（深人社发〔2024〕57号），其他城市统一（粤人社发〔2024〕34号）
 const CITIES = [
-  // 各市 2024 城镇非私营单位年平均工资（广东省统计局/各市统计局）
-  // 计发基数：深圳特殊（深人社发〔2024〕57号），其他城市统一（粤人社发〔2024〕34号）
-  { name: '深圳', salary: 174478, base: 11181 },
-  { name: '广州', salary: 159312, base: 9307 },
-  { name: '珠海', salary: 138119, base: 9307 },
-  { name: '佛山', salary: 114597, base: 9307 },
-  { name: '中山', salary: 108857, base: 9307 },
-  { name: '湛江', salary: 108797, base: 9307 },
-  { name: '惠州', salary: 105735, base: 9307 },
-  { name: '东莞', salary: 105062, base: 9307 },
-  { name: '云浮', salary: 103143, base: 9307 },
-  { name: '清远', salary: 102946, base: 9307 },
-  { name: '汕头', salary: 98870,  base: 9307 },
-  { name: '河源', salary: 94952,  base: 9307 },
-  { name: '广东全省', salary: 135395, base: 9307 }
+  { name: '深圳', salary: 95217, base: 11181 },
+  { name: '广州', salary: 82907, base: 9307 },
+  { name: '中山', salary: 83496, base: 9307 },  // 珠三角片区均值
+  { name: '东莞', salary: 80632, base: 9307 },
+  { name: '珠海', salary: 79041, base: 9307 },
+  { name: '佛山', salary: 78612, base: 9307 },
+  { name: '惠州', salary: 69696, base: 9307 },
+  { name: '清远', salary: 63361, base: 9307 },
+  { name: '河源', salary: 63051, base: 9307 },
+  { name: '云浮', salary: 62275, base: 9307 },  // 粤北片区均值
+  { name: '湛江', salary: 59979, base: 9307 },  // 粤西片区均值
+  { name: '汕头', salary: 58997, base: 9307 },
+  { name: '广东全省', salary: 80976, base: 9307 }
 ];
 
 // 计发月数表（国发[2005]38号 完整附表）

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>房贷月供 & 房价工资比 · 18 城对比（含广东）</title>
+<title>房贷月供 & 房价工资比 · 17 城对比（私营单位口径）</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -186,10 +186,10 @@
 <div class="container">
 
   <header>
-    <h1>房贷月供 & 房价工资比 · 18 城对比（含广东 12 市）</h1>
+    <h1>房贷月供 & 房价工资比 · 17 城对比（私营单位口径）</h1>
     <div class="subtitle">
       用<strong>等额本息法定公式</strong>反推：在不同城市买一套同样的房子，月供 / 总利息 / 不吃不喝多少年还清，是怎样的差距。
-      所有房价、工资、利率、首付均来自<strong>统计局、央行、住建部</strong>。
+      <strong>工资统一采用 2024 年城镇私营单位年平均工资</strong>——更贴近普通劳动者实际收入水平。
     </div>
     <div class="source">
       数据来源：
@@ -262,7 +262,7 @@
       <div class="input-group">
         <label>家庭月收入（元，可两人合计）</label>
         <input type="number" id="p_income" min="3000" step="500" value="20000" />
-        <div class="warning" id="p_income_note">默认按所选城市非私营月均工资填入</div>
+        <div class="warning" id="p_income_note">默认按所选城市私营单位月均工资填入</div>
       </div>
     </div>
 
@@ -280,11 +280,11 @@
   <!-- 8 城市横向对比 -->
   <div class="row">
     <div class="card">
-      <h2>18 城房价工资比（按所选面积 / 城市非私营年薪）</h2>
+      <h2>17 城房价工资比（按所选面积 / 城市私营单位年薪）</h2>
       <div class="chart-wrapper tall"><canvas id="chart_ratio"></canvas></div>
     </div>
     <div class="card">
-      <h2>18 城月供 vs 月均工资</h2>
+      <h2>17 城月供 vs 月均工资</h2>
       <div class="chart-wrapper tall"><canvas id="chart_burden"></canvas></div>
     </div>
   </div>
@@ -320,12 +320,12 @@
 
   <!-- 城市基础数据表 -->
   <div class="card" style="margin-bottom:24px;">
-    <h2>18 城基础参数（2024 非私营年薪 + 2026 二手房均价）</h2>
+    <h2>17 城基础参数（2024 私营单位年薪 + 2026 二手房均价）</h2>
     <table id="cities_table">
       <thead>
         <tr>
           <th>城市</th>
-          <th class="num">2024 非私营年薪</th>
+          <th class="num">2024 私营年薪</th>
           <th class="num">月均工资</th>
           <th class="num">二手房均价 (元/㎡)</th>
           <th class="num">90㎡ 总价</th>
@@ -336,12 +336,12 @@
       <tbody id="cities_tbody"></tbody>
     </table>
     <p style="font-size:12px;color:#95a5a6;margin-top:10px;line-height:1.7">
-      <strong>工资数据</strong>：一线/新一线来自 <a href="https://www.stats.gov.cn/sj/zxfb/202505/t20250516_1959826.html" target="_blank" style="color:#d35400">国家统计局 2024 公报</a> 及各市统计局；
-      广东 12 市来自 <a href="https://www.gd.gov.cn/zwgk/sjfb/mssj/rjkzpsr/content/post_4738798.html" target="_blank" style="color:#d35400">广东省统计局 2024 公报</a>；
-      西安、武汉口径见每行说明。<br />
-      <strong>房价数据</strong>：北京/上海/广州/杭州/成都/武汉/西安/珠海/东莞/惠州 来自房天下、安居客、中国房地产业协会 2026 数据；
-      佛山/中山/汕头/湛江/清远/云浮/河源 来自 58 同城房价网 2026 挂牌均价（取范围中位）。<br />
-      <strong>未覆盖城市</strong>：韶关、梅州、汕尾、江门、阳江、茂名、肇庆、潮州、揭阳 9 市的 2024 非私营单位年平均工资市级数据暂未公开（见广东省统计局），不在本看板中。
+      <strong>工资口径：城镇私营单位 2024 年平均工资</strong>。<br />
+      上海/北京/广州/深圳/杭州/成都/西安/东莞/珠海/佛山/惠州/清远/河源/汕头 共 14 市数据来自各市统计局 2024 年公报；
+      <strong>中山、湛江、云浮</strong> 市级 2024 私营单位工资未公开，采用 <a href="https://stats.gd.gov.cn/tjkx185/content/post_4730845.html" target="_blank" style="color:#d35400">广东省统计局公报</a> 公布的所属片区均值（珠三角 83,496 / 粤西 59,979 / 粤北 62,275），明确标注在数据来源列。<br />
+      <strong>武汉</strong> 2024 城镇私营单位工资市级、省级均未公开，故未纳入本看板；
+      <strong>韶关、梅州、汕尾、江门、阳江、茂名、肇庆、潮州、揭阳</strong> 9 市同理。<br />
+      <strong>房价数据</strong>：来自房天下、安居客、中房协 2026 数据，部分广东地级市来自 58 同城房价网 2026 挂牌均价（取范围中位）。
     </p>
   </div>
 
@@ -355,36 +355,36 @@
 </div>
 
 <script>
-// ================ 权威数据集 ================
-// 工资：各市统计局 2024 年公报 / 国家统计局《中国统计年鉴 2025》/ 广东省统计局
-// 房价：房天下/安居客 2026 全国房价指数；广东其余地级市来自 58 同城房价网
-// group：用于下拉框分组显示
+// ================ 权威数据集（口径：城镇私营单位 2024 年平均工资）================
+// 工资：各市统计局 2024 年公报 / 国家统计局《中国统计年鉴 2025》/ 广东省统计局公报
+// 中山、湛江、云浮 2024 市级私营工资数据未公开，采用广东省公布的所属片区均值
+// 武汉/湖北 2024 城镇私营工资数据未公开，故未纳入本看板
+// 房价：房天下/安居客/中房协 2026 数据；广东部分地级市来自 58 同城房价网
 const CITIES = [
-  // ===== 一线城市 =====
-  { name: '上海', group: '一线', salary: 239557, price: 51264, note: '国家统计局年鉴 / 房天下 2026·05' },
-  { name: '北京', group: '一线', salary: 224608, price: 55275, note: '国家统计局年鉴 / 房天下 2026·05' },
-  { name: '深圳', group: '一线', salary: 174478, price: 53427, note: '深圳市统计局 / 安居客 2025' },
-  { name: '广州', group: '一线', salary: 159312, price: 30285, note: '广州市统计局 / 房天下 2026·05' },
+  // ===== 一线 =====
+  { name: '上海', group: '一线', salary: 113914, price: 51264, note: '上海市统计局 / 房天下 2026·05' },
+  { name: '北京', group: '一线', salary: 106905, price: 55275, note: '北京市统计局 / 房天下 2026·05' },
+  { name: '深圳', group: '一线', salary: 95217,  price: 53427, note: '深圳市统计局 / 安居客 2025' },
+  { name: '广州', group: '一线', salary: 82907,  price: 30285, note: '广州市统计局 / 房天下 2026·05' },
 
   // ===== 新一线 =====
-  { name: '杭州', group: '新一线', salary: 162774, price: 30385, note: '杭州市统计局 / 房天下 2026·05' },
-  { name: '成都', group: '新一线', salary: 125512, price: 14406, note: '成都市统计局 / 房天下 2026·05' },
-  { name: '武汉', group: '新一线', salary: 112917, price: 12773, note: '武汉市统计局(在岗) / 房天下' },
-  { name: '西安', group: '新一线', salary: 111921, price: 12948, note: '陕西省非私营(市级未公开) / 房天下' },
+  { name: '杭州', group: '新一线', salary: 92054, price: 30385, note: '杭州市统计局 / 房天下 2026·05' },
+  { name: '成都', group: '新一线', salary: 68954, price: 14406, note: '成都市统计局 / 房天下 2026·05' },
+  { name: '西安', group: '新一线', salary: 66260, price: 12948, note: '西安市统计局 / 房天下 2026·05' },
 
   // ===== 广东·珠三角（除广深） =====
-  { name: '珠海', group: '广东·珠三角', salary: 138119, price: 15329, note: '珠海市统计局 / 房天下 2026·05' },
-  { name: '东莞', group: '广东·珠三角', salary: 105062, price: 16949, note: '东莞市统计局 / 房天下 2026·05' },
-  { name: '佛山', group: '广东·珠三角', salary: 114597, price: 12357, note: '佛山市统计局 / 58 同城 2026' },
-  { name: '中山', group: '广东·珠三角', salary: 108857, price: 10432, note: '中山市统计局 / 58 同城 2026' },
-  { name: '惠州', group: '广东·珠三角', salary: 105735, price: 7275,  note: '惠州市统计局 / 中房 2026·05' },
+  { name: '东莞', group: '广东·珠三角', salary: 80632, price: 16949, note: '东莞市统计局 / 房天下 2026·05' },
+  { name: '珠海', group: '广东·珠三角', salary: 79041, price: 15329, note: '珠海市统计局 / 房天下 2026·05' },
+  { name: '佛山', group: '广东·珠三角', salary: 78612, price: 12357, note: '佛山市统计局 / 58 同城 2026' },
+  { name: '中山', group: '广东·珠三角', salary: 83496, price: 10432, note: '珠三角片区均值（市级未公开）/ 58 同城' },
+  { name: '惠州', group: '广东·珠三角', salary: 69696, price: 7275,  note: '惠州市统计局 / 中房 2026·05' },
 
   // ===== 广东·非珠三角 =====
-  { name: '汕头', group: '广东·非珠三角', salary: 98870,  price: 8910,  note: '汕头市统计局 / 58 同城 2026' },
-  { name: '湛江', group: '广东·非珠三角', salary: 108797, price: 8376,  note: '湛江市统计局 / 58 同城 2026' },
-  { name: '清远', group: '广东·非珠三角', salary: 102946, price: 5626,  note: '清远市统计局 / 58 同城 2026' },
-  { name: '云浮', group: '广东·非珠三角', salary: 103143, price: 4929,  note: '云浮市统计局 / 58 同城 2026' },
-  { name: '河源', group: '广东·非珠三角', salary: 94952,  price: 5017,  note: '河源市统计局 / 58 同城 2026' }
+  { name: '清远', group: '广东·非珠三角', salary: 63361, price: 5626, note: '清远市统计局 / 58 同城 2026' },
+  { name: '河源', group: '广东·非珠三角', salary: 63051, price: 5017, note: '河源市统计局 / 58 同城 2026' },
+  { name: '云浮', group: '广东·非珠三角', salary: 62275, price: 4929, note: '粤北片区均值（市级未公开）/ 58 同城' },
+  { name: '湛江', group: '广东·非珠三角', salary: 59979, price: 8376, note: '粤西片区均值（市级未公开）/ 58 同城' },
+  { name: '汕头', group: '广东·非珠三角', salary: 58997, price: 8910, note: '汕头市统计局 / 58 同城 2026' }
 ];
 
 // ================ UI 初始化 ================
