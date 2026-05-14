@@ -39,6 +39,13 @@
       "icon": "🏭",
       "description": "制造业、服务业、科技",
       "color": "#16a085"
+    },
+    {
+      "id": "pension",
+      "name": "养老与社保",
+      "icon": "👴",
+      "description": "养老金、替代率、社保",
+      "color": "#6a3093"
     }
   ],
   "dashboards": [
@@ -61,6 +68,16 @@
       "path": "dashboards/tax/shenzhen/index.html",
       "updated": "2026-05-14",
       "source": "深圳市统计局、深圳社保局、深圳公积金中心"
+    },
+    {
+      "id": "pension-guangdong",
+      "category": "pension",
+      "title": "养老金替代率倒推 · 广东各市",
+      "subtitle": "交互式计算器：你退休时能拿多少？基于国发38号法定公式",
+      "tags": ["广东", "替代率", "养老金", "社保", "13市对比"],
+      "path": "dashboards/pension/guangdong/index.html",
+      "updated": "2026-05-14",
+      "source": "人社部、广东省人社厅、深圳市人社局、各市统计局"
     }
   ]
 }
